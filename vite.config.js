@@ -12,17 +12,18 @@ export default defineConfig({
     
     // --- Bagian PENTING untuk menghubungkan ke Backend (BE) ---
     proxy: {
-      // Ketika Frontend mencoba mengakses URL yang dimulai dengan '/api' (misalnya, /api/users)
+      // Proxy untuk API endpoints
       '/api': {
-        // Vite akan mengalihkan permintaan tersebut ke URL Backend ini:
-        target: 'http://127.0.0.1:8000', 
-        // Mengizinkan perubahan header Origin. PENTING untuk melewati CORS.
-        changeOrigin: true, 
-        // Jika Anda ingin menghilangkan '/api' dari permintaan yang dikirim ke BE:
-        // rewrite: (path) => path.replace(/^\/api/, ''), 
-        // (Tapi biasanya lebih mudah jika BE Anda memang sudah menggunakan rute /api)
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        secure: false,
       },
-      // Anda bisa menambahkan rute lain di sini jika dibutuhkan
+      // Proxy untuk Sanctum CSRF cookie
+      '/sanctum': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
     // -----------------------------------------------------------
   },

@@ -9,8 +9,10 @@ const getCookie = (name) => {
 };
 
 // Create axios instance with base configuration
+// IMPORTANT: baseURL is empty because we use Vite Proxy
+// All requests go through localhost:5173 and get proxied to localhost:8000
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  baseURL: '', // Empty - services already have /api prefix, Vite proxy handles the rest
   timeout: import.meta.env.VITE_API_TIMEOUT || 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -61,10 +63,10 @@ axiosInstance.interceptors.response.use(
 
 // CSRF Cookie Fetcher
 // MUST be called BEFORE login to get CSRF token
+// Uses Vite Proxy to avoid CORS
 export const getCsrfCookie = async () => {
   try {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-    await axios.get(`${baseUrl}/sanctum/csrf-cookie`, {
+    await axios.get('/sanctum/csrf-cookie', {
       withCredentials: true
     });
     console.log('CSRF cookie fetched successfully');
