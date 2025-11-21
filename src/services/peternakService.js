@@ -6,7 +6,7 @@ const peternakService = {
    * @returns {Promise} Current sensor data + 7 days summary
    */
   getDashboard: () => {
-    return axiosInstance.get('/peternak/dashboard');
+    return axiosInstance.get('/api/peternak/dashboard');
   },
 
   /**
@@ -15,7 +15,7 @@ const peternakService = {
    * @returns {Promise} Success message
    */
   submitReport: (data) => {
-    return axiosInstance.post('/peternak/reports', data);
+    return axiosInstance.post('/api/peternak/reports', data);
   },
 
   /**
@@ -23,7 +23,7 @@ const peternakService = {
    * @returns {Promise} User data + owner name
    */
   getProfile: () => {
-    return axiosInstance.get('/peternak/profile');
+    return axiosInstance.get('/api/peternak/profile');
   },
 
   /**
@@ -32,7 +32,7 @@ const peternakService = {
    * @returns {Promise} Updated profile or OTP required message
    */
   updateProfile: (data) => {
-    return axiosInstance.put('/peternak/profile', data);
+    return axiosInstance.put('/api/peternak/profile', data);
   },
 
   /**
@@ -44,7 +44,7 @@ const peternakService = {
     const formData = new FormData();
     formData.append('photo', file);
 
-    return axiosInstance.post('/peternak/profile/photo', formData, {
+    return axiosInstance.post('/api/peternak/profile/photo', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -57,7 +57,7 @@ const peternakService = {
    * @returns {Promise} Success message
    */
   sendOtp: (newPhone) => {
-    return axiosInstance.post('/peternak/otp/send', {
+    return axiosInstance.post('/api/peternak/otp/send', {
       new_phone_number: newPhone
     });
   },
@@ -69,7 +69,7 @@ const peternakService = {
    * @returns {Promise} Success message
    */
   verifyOtp: (otp, newPhone) => {
-    return axiosInstance.post('/peternak/otp/verify', {
+    return axiosInstance.post('/api/peternak/otp/verify', {
       otp,
       new_phone_number: newPhone
     });

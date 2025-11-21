@@ -6,7 +6,7 @@ const ownerService = {
    * @returns {Promise} Farms list, analytics, and activities
    */
   getDashboard: () => {
-    return axiosInstance.get('/owner/dashboard');
+    return axiosInstance.get('/api/owner/dashboard');
   },
 
   /**
@@ -16,7 +16,7 @@ const ownerService = {
    * @returns {Promise} Current sensor data + historical chart
    */
   getMonitoring: (farmId, period = '1day') => {
-    return axiosInstance.get(`/owner/monitoring/${farmId}`, {
+    return axiosInstance.get(`/api/owner/monitoring/${farmId}`, {
       params: { period }
     });
   },
@@ -28,7 +28,7 @@ const ownerService = {
    * @returns {Promise} Manual data chart (pakan, minum, bobot, kematian)
    */
   getAnalytics: (farmId, period = '1day') => {
-    return axiosInstance.get(`/owner/analytics/${farmId}`, {
+    return axiosInstance.get(`/api/owner/analytics/${farmId}`, {
       params: { period }
     });
   },
@@ -39,7 +39,7 @@ const ownerService = {
    * @returns {Promise} CSV file blob
    */
   exportData: (farmId) => {
-    return axiosInstance.get(`/owner/export/${farmId}`, {
+    return axiosInstance.get(`/api/owner/export/${farmId}`, {
       params: { format: 'csv' },
       responseType: 'blob' // Important for file download
     });
@@ -51,7 +51,7 @@ const ownerService = {
    * @returns {Promise} Success message
    */
   submitRequest: (data) => {
-    return axiosInstance.post('/owner/requests', data);
+    return axiosInstance.post('/api/owner/requests', data);
   },
 
   /**
@@ -59,7 +59,7 @@ const ownerService = {
    * @returns {Promise} User data
    */
   getProfile: () => {
-    return axiosInstance.get('/owner/profile');
+    return axiosInstance.get('/api/owner/profile');
   },
 
   /**
@@ -68,7 +68,7 @@ const ownerService = {
    * @returns {Promise} Updated profile
    */
   updateProfile: (data) => {
-    return axiosInstance.put('/owner/profile', data);
+    return axiosInstance.put('/api/owner/profile', data);
   }
 };
 

@@ -15,7 +15,7 @@ const authService = {
       await getCsrfCookie();
 
       // Step 2: Login with credentials
-      const response = await axiosInstance.post('/login', {
+      const response = await axiosInstance.post('/api/login', {
         username,
         password
       });
@@ -45,7 +45,7 @@ const authService = {
   logout: async () => {
     try {
       // Call logout endpoint if available
-      await axiosInstance.post('/logout');
+      await axiosInstance.post('/api/logout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
