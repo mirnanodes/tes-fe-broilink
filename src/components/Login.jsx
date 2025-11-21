@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Login.css';
+import { Eye, EyeOff } from 'lucide-react';
 
 const BroilinkLogo = () => (
-  <div className="broilink-logo-container">
-    <span className="broilink-logo-text">Broilink</span>
+  <div className="flex items-center gap-2">
+    <div className="grid grid-cols-2 gap-1">
+      <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+      <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+      <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+      <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+    </div>
+    <span className="text-xl font-bold text-gray-800">Broilink</span>
   </div>
 );
 
@@ -72,76 +78,127 @@ const Login = ({ setIsLoggedIn, setUserRole }) => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <div className="login-form-side">
-          <h1 className="welcome-title">Selamat Datang</h1>
-          <p className="subtitle">Masuk ke akun Broilink Anda</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-5xl flex overflow-hidden">
+        {/* Left Side - Form */}
+        <div className="w-full lg:w-1/2 p-10">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Selamat Datang</h1>
+          <p className="text-gray-500 mb-8">Masuk ke akun Broilink Anda</p>
 
-          <form className="login-form" onSubmit={handleSubmit}>
-            {error && <p className="error-message" style={{ color: 'red', marginBottom: '10px' }}>{error}</p>}
+          {error && (
+            <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
+              {error}
+            </div>
+          )}
 
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              placeholder="Masukkan username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-            />
-
-            <label htmlFor="password">Password</label>
-            <div className="password-input-wrapper">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Username Field */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
               <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Masukkan password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                id="username"
+                name="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                autoComplete="username"
               />
-              <span
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? '👁️' : '👁️'}
-              </span>
             </div>
 
-            <div className="remember-me-checkbox">
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition pr-12"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me Checkbox */}
+            <div className="flex items-center">
               <input
                 id="rememberMe"
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
               />
-              <label htmlFor="rememberMe">Ingat Saya</label>
+              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700">
+                Ingat Saya
+              </label>
             </div>
 
-            <button type="submit" className="login-button">
+            {/* Login Button */}
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-200"
+            >
               Masuk
             </button>
           </form>
 
-          <div className="form-links">
-            <a href="#lupa-password" className="link-forgot">Lupa Password?</a>
-            <a href="#masalah-akun" className="link-issue">Ada Masalah Akun?</a>
+          {/* Links */}
+          <div className="mt-6 flex flex-col gap-2 text-sm text-center">
+            <button
+              onClick={() => navigate('/register')}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              Belum Punya Akun? <span className="font-medium">Daftar Sekarang!</span>
+            </button>
+            <button
+              onClick={() => navigate('/account-issues')}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              Ada Masalah Akun?
+            </button>
           </div>
         </div>
 
-        <div className="product-info-side">
-          <BroilinkLogo />
-          <p className="tagline">
-            Teknologi pintar untuk peternakan ayam broiler yang lebih efisien dan produktif
-          </p>
-          <ul className="feature-list">
-            <li><span className="dot dot-green"></span> Monitoring Real-time</li>
-            <li><span className="dot dot-blue"></span> Analisis Data Cerdas</li>
-            <li><span className="dot dot-green"></span> Otomasi Kandang</li>
-          </ul>
+        {/* Right Side - Info */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-500 to-green-500 p-10 flex-col justify-between text-white">
+          <div className="flex justify-end">
+            <BroilinkLogo />
+          </div>
+
+          <div className="space-y-6">
+            <p className="text-sm opacity-90 mb-8">
+              Teknologi pintar untuk peternakan ayam broiler yang lebih efisien dan produktif
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                <span className="text-sm">Masalah Baru Diisi</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-blue-300 rounded-full"></div>
+                <span className="text-sm">Antrian Users Dealer</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                <span className="text-sm">Barang Katalog</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

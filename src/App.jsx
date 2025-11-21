@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 import LandingPage from './Pages/LandingPage/LandingPage';
 import Login from './components/Login.jsx';
+import AccountIssues from './components/AccountIssues.jsx';
 
 import AdminLayout from './Pages/AdminPage/AdminLayout';
 import DashboardAdmin from './Pages/AdminPage/DashboardAdmin';
@@ -55,6 +56,11 @@ function App() {
         <Route
           path="/login"
           element={<Login setIsLoggedIn={setIsLoggedIn} setUserRole={setUserRole} />}
+        />
+
+        <Route
+          path="/account-issues"
+          element={<AccountIssues />}
         />
 
         <Route path="/admin" element={
