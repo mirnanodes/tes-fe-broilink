@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ownerService from '../services/ownerService';
+import { handleError } from '../utils/errorHandler';
 
 const RequestModal = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState('kandang');
@@ -17,27 +18,59 @@ const RequestModal = ({ onClose }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const requestData = {
-        type: activeTab === 'kandang' ? 'Tambah Kandang' : 'Tambah Peternak',
-        detail: activeTab === 'kandang'
-          ? `Kandang: ${formData.farmName}, Lokasi: ${formData.farmLocation}, Luas: ${formData.farmArea} m²`
-          : `Peternak: ${formData.peternakName}, HP: ${formData.peternakPhone}, Email: ${formData.peternakEmail}`
-      };
+      let requestData;
+
+      if (activeTab === 'kandang') {
+        requestData = {
+          request_type: 'Tambah Kandang',
+          request_content: JSON.stringify({
+            farm_name: formData.farmName,
+            location: formData.farmLocation,
+            farm_area: formData.farmArea
+          })
+        };
+      } else {
+        requestData = {
+          request_type: 'Tambah Peternak',
+          request_content: JSON.stringify({
+            name: formData.peternakName,
+            phone_number: formData.peternakPhone,
+            email: formData.peternakEmail
+          })
+        };
+      }
 
       await ownerService.submitRequest(requestData);
       alert('Permintaan berhasil dikirim!');
       onClose();
     } catch (error) {
-      alert('Gagal mengirim permintaan!');
+      const errorMessage = handleError('RequestModal submit', error);
+      alert('Gagal mengirim permintaan: ' + errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-[480px]">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Pengajuan Permintaan</h3>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg p-6 w-[480px] max-w-[90vw]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Ajukan Permintaan Owner</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
         <div className="flex gap-2 mb-6 border-b border-gray-200">
           <button

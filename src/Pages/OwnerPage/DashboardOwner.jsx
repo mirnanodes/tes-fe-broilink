@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import ownerService from '../../services/ownerService';
 import { handleError } from '../../utils/errorHandler';
+import RequestModal from '../../components/RequestModal';
 import './DashboardOwner.css';
 
 const Dashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('Mortalitas');
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const [farmData, setFarmData] = useState({
     name: 'Kandang A',
@@ -62,8 +64,7 @@ const Dashboard = () => {
   };
 
   const handlePengajuan = () => {
-    console.log('Pengajuan Permintaan');
-    alert('Form pengajuan permintaan akan dibuka');
+    setShowRequestModal(true);
   };
 
   return (
@@ -166,6 +167,10 @@ const Dashboard = () => {
           </tbody>
         </table>
       </div>
+
+      {showRequestModal && (
+        <RequestModal onClose={() => setShowRequestModal(false)} />
+      )}
     </div>
   );
 };
