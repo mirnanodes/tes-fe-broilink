@@ -1,0 +1,435 @@
+/* --- Container Utama --- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-box {
+    display: flex;
+    width: 950px;
+    max-width: 100%;
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: white;
+}
+
+/* --- Sisi Form (Kiri) --- */
+.login-form-side {
+    flex: 2;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.welcome-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #333333; 
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #555555; 
+    margin-bottom: 10px;
+}
+
+/* Form Styling */
+.login-form {
+    width: 100%;
+    max-width: 350px;
+    text-align: left;
+}
+
+.login-form label {
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333333; 
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.login-form input:focus {
+    border-color: #0088FF; 
+    outline: none;
+}
+
+/* Password Input dengan Toggle */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #a0a0a0;
+    padding: 5px;
+    border-radius: 4px;
+    transition: color 0.2s;
+}
+
+.toggle-password:hover {
+    color: #333333; 
+}
+
+/* Checkbox Ingat Saya */
+.remember-me-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 18px 0 30px;
+}
+
+.remember-me-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #0088FF; 
+}
+
+.remember-me-checkbox label {
+    margin-top: 0;
+    margin-left: 10px;
+    font-weight: 400;
+    color: #555555; 
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+/* Tombol Masuk */
+.login-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #0088FF;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    text-transform: none;
+    letter-spacing: normal;
+    margin-bottom: 15px;
+}
+
+.login-button:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.login-button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.login-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Secondary Button (Kembali ke Beranda) */
+.login-button.secondary {
+    background-color: #6c757d;
+}
+
+.login-button.secondary:hover:not(:disabled) {
+    background-color: #5a6268;
+}
+
+/* Error Messages */
+.login-error,
+.modal-error {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin: 10px 0;
+    text-align: center;
+}
+
+/* Link Bawah Form */
+.form-links {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.form-links p {
+    margin: 0;
+}
+
+.form-links a {
+    color: #0088FF; 
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
+
+.form-links a:hover {
+    color: #1d4ed8; 
+}
+
+
+/* --- Sisi Info Produk (Kanan) --- */
+.product-info-side {
+    flex: 1;
+    padding: 40px 20px;
+    background-color: #eaf0f6;
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow-y: auto;
+    max-height: 90vh;
+}
+
+.logo-icon {
+    width: 150px;
+    height: auto;
+    display: block;
+}
+
+/* Class baru untuk teks "Broilink" */
+.broilink-name { 
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #333333; 
+    line-height: 1; 
+}
+
+.tagline {
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555555; 
+    margin-bottom: 40px;
+    max-width: 300px;
+}
+
+/* Daftar Fitur */
+.feature-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    width: 100%;
+    max-width: 250px;
+}
+
+.feature-list li {
+    font-size: 0.95rem;
+    color: #555555; 
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 12px;
+    filter: blur(1px);
+}
+
+.dot-green {
+    background-color: #38c172; 
+}
+
+.dot-blue {
+    background-color: #007bff; 
+}
+
+/* --- Styling Tambahan untuk Modal (Pop-up) --- */
+
+/* Overlay di belakang modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 450px;
+    padding: 25px;
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333333; 
+}
+
+.modal-close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #999;
+}
+
+.modal-subtitle {
+    font-size: 0.9rem;
+    color: #555555; 
+    margin-bottom: 25px;
+}
+
+/* Form elements dalam modal */
+.modal-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333333; 
+    margin-bottom: 5px;
+    margin-top: 15px;
+}
+
+/* Styling untuk Input Teks (Nomor WA dan Email) */
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    
+}
+
+/* Styling Khusus untuk Select (Jenis Masalah) */
+.modal-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    
+    /* Properti khusus untuk membuat panah dropdown */
+    appearance: none;
+    background-color: white;
+    /* Menggunakan SVG untuk panah ke bawah */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333' width='18px' height='18px'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 14px;
+}
+
+/* Button Group (Untuk pemilihan Lupa Password / Masalah Lain) */
+.modal-button-group {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.modal-problem-button {
+    flex: 1;
+    padding: 15px 10px;
+    background-color: #0088FF; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 6px;
+    color: #ffff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.modal-problem-button:hover {
+    background-color: #1d4ed8;
+    border-color: #bcc6d1;
+}
+
+/* Tombol Aksi dalam modal */
+.modal-action-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+.modal-action-button.primary {
+    background-color: #0088FF; 
+    color: white;
+}
+
+.modal-action-button.primary:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.modal-action-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+
+/* --- Styling Notifikasi Sukses --- */
+.notification-success {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333333;
+    z-index: 1001;
+}
