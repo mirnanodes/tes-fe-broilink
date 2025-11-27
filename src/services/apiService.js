@@ -2,15 +2,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000' + '/api'
 
 const apiService = {
   getAuthToken() {
-    return localStorage.getItem('auth_token');
+    return localStorage.getItem('token');
   },
 
   setAuthToken(token) {
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem('token', token);
   },
 
   removeAuthToken() {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
   },
 
   async request(endpoint, options = {}) {
@@ -69,6 +69,39 @@ const apiService = {
 
   async delete(endpoint) {
     return this.request(endpoint, { method: 'DELETE' });
+  },
+
+  async upload(endpoint, formData) {
+    const token = this.getAuthToken();
+
+    const headers = {
+      'Accept': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          this.removeAuthToken();
+          window.location.href = '/login';
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Upload failed:', error);
+      throw error;
+    }
   },
 
   // TODO: Add specific API methods for your app
@@ -136,6 +169,40 @@ const apiService = {
     async getRequests() {
       return apiService.get('/admin/requests');
     },
+
+    async updateRequestStatus(requestId, status) {
+      return apiService.put(`/admin/requests/${requestId}/status`, { status });
+    },
+
+    async getFarmConfig(farmId) {
+      return apiService.get(`/admin/farms/${farmId}/config`);
+    },
+
+    async updateFarmConfig(farmId, configData) {
+      return apiService.put(`/admin/farms/${farmId}/config`, configData);
+    },
+
+    async resetFarmConfig(farmId) {
+      return apiService.post(`/admin/farms/${farmId}/config/reset`);
+    },
+
+    async uploadIotCsv(farmId, file) {
+      const formData = new FormData();
+      formData.append('csv_file', file);
+      return apiService.upload(`/admin/farms/${farmId}/iot/upload`, formData);
+    },
+
+    async getOwners() {
+      return apiService.get('/admin/owners');
+    },
+
+    async getPeternaks(ownerId) {
+      return apiService.get(`/admin/peternaks/${ownerId}`);
+    },
+
+    async getDashboard() {
+      return apiService.get('/admin/dashboard');
+    },
   },
 
   // TODO: Add methods for Owner endpoints
@@ -196,10 +263,18 @@ const apiService = {
     },
   },
 
-  // TODO: Public endpoints
+  // Public endpoints
   public: {
     async submitGuestRequest(requestData) {
       return apiService.post('/requests/submit', requestData);
+    },
+
+    async forgotPassword(email) {
+      return apiService.post('/forgot-password', { email });
+    },
+
+    async guestReport(data) {
+      return apiService.post('/guest-report', data);
     },
   },
 };

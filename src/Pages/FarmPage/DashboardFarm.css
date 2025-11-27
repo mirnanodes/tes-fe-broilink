@@ -86,6 +86,26 @@
   display: inline-block;
 }
 
+.status-badge-warning {
+  background-color: #ff9800;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge-danger {
+  background-color: #f44336;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+}
+
 /* Chart Section */
 .chart-section-peternak {
   background: #fff;

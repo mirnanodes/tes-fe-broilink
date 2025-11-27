@@ -50,15 +50,22 @@ const DashboardAdmin = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+
       const response = await adminService.getDashboard();
+
       const data = response.data.data || response.data;
+
       // Only update if API returns valid data
-      if (data && (data.total_owners !== undefined || data.recent_requests)) {
-        setStats(data);
+      if (data && (data.summary || data.total_owners !== undefined || data.recent_requests || data.recent)) {
+        setStats({
+          total_owners: data.summary?.total_owner || data.total_owners || 0,
+          total_peternak: data.summary?.total_peternak || data.total_peternak || 0,
+          pending_requests: data.summary?.total_guest_requests || data.pending_requests || 0,
+          recent_requests: data.recent || data.recent_requests || []
+        });
       }
     } catch (error) {
       const errorMessage = handleError('DashboardAdmin fetchData', error);
-      console.error(errorMessage);
       // Keep mock data (already in state)
     } finally {
       setLoading(false);
@@ -73,10 +80,10 @@ const DashboardAdmin = () => {
   );
 
   const RequestCard = ({ request }) => {
-    const roleName = request.role || (request.user?.role?.name) || 'Guest';
-    const userName = request.name || request.user?.name || (roleName === 'Guest' ? 'Guest' : 'Nama Tidak Tersedia');
-    const displayTime = request.created_at || 'undefined';
-    const requestType = request.type || request.request_type || '-';
+    const userName = request.username || request.sender_name || 'Guest';
+    const roleName = request.role || 'Guest';
+    const displayTime = request.time || request.sent_time || '—';
+    const requestType = request.request_type || '-';
 
     return (
       <div className="bg-white rounded-xl p-5 border border-gray-200 shadow hover:shadow-lg transition-all">
@@ -126,6 +133,7 @@ const DashboardAdmin = () => {
       <SidebarAdmin />
       <main className="ml-48 pt-24">
         <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
           <div className="grid grid-cols-3 gap-8">
             <StatCard title="Total Pengguna Owner" value={stats.total_owners} color="blue" />
             <StatCard title="Total Pengguna Peternak" value={stats.total_peternak} color="blue" />

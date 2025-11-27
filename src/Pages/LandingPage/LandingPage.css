@@ -1,443 +1,712 @@
-/* src/pages/LandingPage/LandingPage.css */
+/* LandingPage.css */
 
-/* --- General & Typography --- */
-body {
-    margin: 0;
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    background-color: #f8f9fa;
+/* Scoped styles for landing page only */
+.landing-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  color: #333;
+  line-height: 1.6;
 }
 
-h1, h2, h3, h4 {
-    color: #212529;
+.landing-page * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.btn {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    text-decoration: none;
-    text-align: center;
-    transition: background-color 0.3s;
-}
-
-.btn-main {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-main:hover {
-    background-color: #0056b3;
-}
-
-.section-title {
-    text-align: center;
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.section-subtitle {
-    text-align: center;
-    color: #6c757d;
-    font-size: 16px;
-    margin-bottom: 50px;
-}
-
-
-/* --- Header (Navbar) --- */
+/* Header */
 .header {
-    background-color: white;
-    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
 }
 
-.logo {
-    font-size: 24px;
-    font-weight: 900;
-    color: #212529;
+.logo-icon {
+  height: 50px;
+  width: auto;
 }
 
-.nav-links a {
-    text-decoration: none;
-    color: #495057;
-    margin-left: 30px;
-    font-size: 15px;
-    transition: color 0.3s;
+.logo-text {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1;
+  transition: color 0.3s ease;
 }
 
-.nav-links a:hover {
-    color: #007bff;
+.nav-desktop {
+  display: none;
+  gap: 2rem;
 }
 
-.btn-login {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 18px;
+.nav-desktop .nav-link {
+  background: none;
+  border: none;
+  color: #1A1A1A;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: color 0.3s;
+  text-transform: capitalize;
 }
 
-.btn-login:hover {
-    background-color: #0056b3;
+.nav-desktop .nav-link:hover {
+  color: #1d4ed8;
 }
 
+.btn-login-desktop {
+  display: none;
+  background-color: #0088FF;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
 
-/* --- Hero Section --- */
+.btn-login-desktop:hover {
+  background-color: #1d4ed8;
+}
+
+.mobile-menu-btn {
+  display: block;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.nav-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 0;
+}
+
+.nav-mobile-link {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: #4b5563;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.nav-mobile-link:hover {
+  background-color: #f3f4f6;
+}
+
+.btn-login-mobile {
+  width: 100%;
+  background-color: #0088FF;
+  color: white;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.btn-login-mobile:hover {
+  background-color: #1d4ed8;
+}
+
+/* Hero Section */
 .hero-section {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 0 20px;
-    display: flex;
-    gap: 40px;
-    align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background-color: white;
+}
+
+.hero-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  align-items: center;
 }
 
 .hero-content {
-    flex: 1;
+  flex: 1;
 }
 
-.clean-chicken-tag {
-    background-color: #e6f7e9;
-    color: #28a745;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    display: inline-block;
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #d1fae5;
+  color: #065f46;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
 }
 
-.hero-content h1 {
-    font-size: 48px;
-    line-height: 1.2;
-    margin-bottom: 20px;
+.badge-icon {
+  margin-right: 0.5rem;
 }
 
-.hero-content p {
-    color: #6c757d;
-    margin-bottom: 30px;
+.hero-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
 }
 
-.hero-checks {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 30px;
-    color: #28a745;
+.hero-subtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 2rem;
 }
 
-.hero-checks li {
-    margin-bottom: 10px;
-    font-weight: 600;
+.hero-features {
+  list-style: none;
+  margin-bottom: 2rem;
 }
 
-.hero-image { /* Gaya untuk tag <img> */
-    width: 100%;
-    max-width: 500px;
-    height: 350px;
-    object-fit: cover; /* Penting untuk menjaga rasio gambar */
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+.hero-feature-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.feature-check {
+  color: #059669;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.btn-cta {
+  background-color: #0088FF;
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.btn-cta:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-icon {
+  margin-left: 0.5rem;
+  transition: transform 0.3s;
+}
+
+.btn-cta:hover .btn-icon {
+  transform: translateX(0.25rem);
+}
+
+.hero-image-wrapper {
+  flex: 1;
+  position: relative;
+  width: 100%;
 }
 
 .hero-image-container {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
-
-.tingkat-kelangsungan{
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-.tingkat-kelembagaan span {
-    font-size: 14px;
-    color: #6c757d;
+.hero-stat-card {
+  display: none;
+  position: absolute;
+  bottom: -1.5rem;
+  left: -1.5rem;
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.tingkat-kelembagaan .percentage {
-    font-size: 24px;
-    font-weight: bold;
-    color: #212529;
+.stat-number {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #0088FF;
 }
 
+.stat-label {
+  color: #6b7280;
+}
 
-/* --- Fitur Section --- */
-.feature-section {
-    background-color: #f8f9fa;
-    padding: 80px 20px;
+/* Section Common Styles */
+.section-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-title {
+  font-size: 3rem;
+  color: #1A1A1A;
+  margin-bottom: 1rem;
+}
+
+/* Fitur Section */
+.section-fitur {
+  background-color: white;
+  padding: 4rem 0;
 }
 
 .feature-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 }
 
 .feature-card {
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    width: 30%;
-    text-align: center;
-    border: 1px solid #e9ecef;
+  background-color: #f9fafb;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s;
+  
+}
+
+.feature-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .feature-icon {
-    font-size: 40px;
-    margin-bottom: 15px;
-    color: #28a745;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-/* --- Keunggulan Section --- */
-.keunggulan-section {
-    padding: 80px 20px;
-    background-color: #e6f7ff; /* Warna latar belakang biru muda */
+.feature-description {
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Keunggulan Section */
+.section-keunggulan {
+  background-color: #F0F9FF;
+  padding: 4rem 0;
 }
 
 .keunggulan-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 }
 
 .keunggulan-card {
-    background-color: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    width: 30%;
-    text-align: center;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.keunggulan-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .keunggulan-icon {
-    font-size: 30px;
-    margin-bottom: 10px;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* --- Testimoni Section --- */
-.testimoni-section {
-    padding: 80px 20px;
+.keunggulan-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.keunggulan-description {
+  color: #6b7280;
+  text-align: center;
+}
+
+
+/* Testimoni Section */
+.section-testimoni {
+  padding: 4rem 0;
 }
 
 .testimoni-grid {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 }
 
 .testimoni-card {
-    background-color: #f1fff1; /* Latar hijau muda */
-    border: 1px solid #d4edda;
-    border-radius: 8px;
-    padding: 25px;
-    width: 45%;
-    display: flex;
-    align-items: flex-start;
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.75rem;
+  padding: 2rem;
 }
 
-.avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #28a745;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    font-weight: bold;
-    margin-right: 15px;
+.testimoni-header {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
-.testimoni-content .name {
-    font-weight: bold;
-    margin: 0;
+.testimoni-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background-color: #059669;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-right: 1rem;
+  flex-shrink: 0;
 }
 
-.testimoni-content .role {
-    font-size: 12px;
-    color: #6c757d;
-    margin-bottom: 10px;
+.testimoni-info {
+  flex: 1;
 }
 
-.testimoni-content .text {
-    font-style: italic;
-    color: #495057;
+.testimoni-name {
+  font-weight: 700;
+  color: #1A1A1A;
 }
 
+.testimoni-role {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
 
-/* --- Harga Section --- */
-.pricing-section {
-    padding: 80px 20px;
-    background-color: #f8f9fa;
+.testimoni-location {
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.testimoni-text {
+  font-style: italic;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+.testimoni-rating {
+  display: flex;
+  gap: 0.25rem;
+  color: #eab308;
+}
+
+/* Harga Section */
+.section-harga {
+  background-color: #F0F9FF;
+  padding: 4rem 0;
 }
 
 .pricing-grid {
-    max-width: 1000px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    gap: 30px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 80rem;
+  margin: 0 auto;
 }
 
 .pricing-card {
-    background-color: white;
-    padding: 40px 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    width: 40%;
-    text-align: center;
-    border: 1px solid #e9ecef;
-    position: relative;
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .pricing-card.featured {
-    border-color: #007bff;
-    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+  border: 2px solid #0088FF;
+  box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.2);
 }
 
-.featured-tag {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #007bff;
-    color: white;
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    white-space: nowrap;
+.featured-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #0088FF;
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
 }
 
-.plan-title {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 10px;
+.pricing-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1A1A1A;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.plan-price {
-    font-size: 48px;
-    font-weight: 700;
-    color: #212529;
-    margin-bottom: 30px;
+.pricing-subtitle {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.plan-price::before {
-    content: "Mulai dari ";
-    display: block;
-    font-size: 14px;
-    font-weight: normal;
-    color: #6c757d;
+.pricing-price-wrapper {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.plan-features {
-    list-style: none;
-    padding: 0;
-    text-align: left;
-    margin-bottom: 40px;
+.pricing-price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1A1A1A;
 }
 
-.plan-features li {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-    color: #495057;
+.pricing-period {
+  color: #6b7280;
 }
 
-.btn-plan {
-    width: 100%;
-    background-color: #e9ecef;
-    color: #212529;
+.pricing-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 1.5rem;
+  background-color: #16A34A;
+  color: white;
 }
 
-.pricing-card.featured .btn-plan {
-    background-color: #007bff;
-    color: white;
+.pricing-btn:hover {
+  background-color: #e5e7eb;
 }
 
-.pricing-card.featured .btn-plan:hover {
-    background-color: #0056b3;
+.pricing-btn.featured {
+  background-color: #0088FF;
+  color: white;
 }
 
-
-/* --- Footer --- */
-.main-footer {
-    background-color: #212529;
-    color: #adb5bd;
-    padding: 50px 20px 20px;
+.pricing-btn.featured:hover {
+  background-color: #1d4ed8;
 }
 
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 30px;
-    border-bottom: 1px solid #495057;
-    padding-bottom: 30px;
-    margin-bottom: 20px;
+.pricing-features {
+  list-style: none;
 }
 
-.footer-brand {
-    width: 300px;
+.pricing-feature-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.75rem 0;
+}
+
+.pricing-check {
+  color: #059669;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+/* Footer */
+.footer {
+  background-color: #0F172A;
+  color: #9ca3af;
+  padding: 3rem 0;
+}
+
+.footer-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #374151;
+  margin-bottom: 2rem;
 }
 
 .footer-brand .logo {
-    color: white;
-    margin-bottom: 15px;
+  color: white;
+  margin-bottom: 1rem;
 }
 
-.footer-brand p {
-    font-size: 14px;
-    margin: 5px 0;
+.footer-brand-text {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
 }
 
-.footer-links-group h4 {
-    color: white;
-    margin-bottom: 15px;
-    font-size: 18px;
+.footer-links-title {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
-.footer-links-group ul {
-    list-style: none;
-    padding: 0;
+.footer-links-list {
+  list-style: none;
 }
 
-.footer-links-group a {
-    text-decoration: none;
-    color: #adb5bd;
-    font-size: 14px;
-    line-height: 2;
+.footer-links-list button,
+.footer-links-list a {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.3s;
+  text-align: left;
 }
 
-.footer-links-group a:hover {
-    color: #007bff;
+.footer-links-list button:hover,
+.footer-links-list a:hover {
+  color: #0088FF;
+}
+
+.footer-bottom {
+  font-size: 0.875rem;
+}
+
+.footer-address {
+  margin-bottom: 0.5rem;
+}
+
+.footer-copyright {
+  color: #6b7280;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .mobile-menu-btn {
+    display: none;
+  }
+
+  .nav-desktop {
+    display: flex;
+  }
+
+  .btn-login-desktop {
+    display: block;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .hero-container {
+    flex-direction: row;
+  }
+
+  .hero-stat-card {
+    display: block;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .keunggulan-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .testimoni-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pricing-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-section {
+    padding: 4rem 1rem 6rem;
+  }
+
+  .section-fitur,
+  .section-keunggulan,
+  .section-testimoni,
+  .section-harga {
+    padding: 5rem 0;
+  }
+
+  .section-cta {
+    padding: 5rem 0;
+  }
+
+  .cta-title {
+    font-size: 2.5rem;
+  }
 }

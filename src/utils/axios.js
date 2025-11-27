@@ -8,24 +8,23 @@ const getCookie = (name) => {
   return null;
 };
 
-// Create axios instance with base configuration
-// IMPORTANT: baseURL is empty because we use Vite Proxy
-// All requests go through localhost:5173 and get proxied to localhost:8000
+// SIMPLE & DIRECT: Point directly to backend API
+const API_BASE_URL = 'http://localhost:8000/api';
+
+// Create axios instance
 const axiosInstance = axios.create({
-  baseURL: '', // Empty - services already have /api prefix, Vite proxy handles the rest
-  timeout: import.meta.env.VITE_API_TIMEOUT || 30000,
+  baseURL: API_BASE_URL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  withCredentials: true, // CRITICAL: Enables cookies for CSRF
-  withXSRFToken: true    // CRITICAL: Auto-send XSRF token
+  withCredentials: true
 });
 
-// Request interceptor - adds Bearer token and XSRF token to all requests
+// Request interceptor - adds Bearer token and XSRF token
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Add Bearer token
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -37,40 +36,43 @@ axiosInstance.interceptors.request.use(
       config.headers['X-XSRF-TOKEN'] = xsrfToken;
     }
 
+    console.log('🔵 API Request:', config.method.toUpperCase(), config.url);
     return config;
   },
   (error) => {
+    console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor - handles 401 unauthorized globally
+// Response interceptor - handles responses and errors
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ API Response:', response.config.url, response.status);
+    return response;
+  },
   (error) => {
+    console.error('❌ API Error:', error.config?.url, error.response?.status);
+
     if (error.response?.status === 401) {
-      // Clear stored auth data
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('userRole');
-      // Redirect to login
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );
 
 // CSRF Cookie Fetcher
-// MUST be called BEFORE login to get CSRF token
-// Uses Vite Proxy to avoid CORS
 export const getCsrfCookie = async () => {
   try {
-    await axios.get('/sanctum/csrf-cookie', {
+    await axios.get('http://localhost:8000/sanctum/csrf-cookie', {
       withCredentials: true
     });
     console.log('CSRF cookie fetched successfully');
-    // Wait a bit for cookie to be set
     await new Promise(resolve => setTimeout(resolve, 100));
   } catch (error) {
     console.error('Failed to fetch CSRF cookie:', error);

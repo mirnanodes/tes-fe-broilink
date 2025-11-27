@@ -19,14 +19,24 @@ const DiagramAnalisis = () => {
     { time: '20.00', value: 5 }
   ]);
 
+  const [chartData2, setChartData2] = useState([
+    { time: '00.00', value: 5 },
+    { time: '04.00', value: 10 },
+    { time: '08.00', value: 4 },
+    { time: '12.00', value: 6 },
+    { time: '16.00', value: 12 },
+    { time: '20.00', value: 8 }
+  ]);
+
   const [selectedFarmId, setSelectedFarmId] = useState(1);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
-  const maxValue = 20;
+  const [maxValue, setMaxValue] = useState(25);
+  const [maxValue2, setMaxValue2] = useState(25);
 
   useEffect(() => {
     fetchAnalyticsData();
-  }, [filters.timeRange, selectedFarmId]);
+  }, [filters.timeRange, selectedFarmId, filters.data1, filters.data2]);
 
   const fetchAnalyticsData = async () => {
     setIsLoadingData(true);
@@ -36,15 +46,16 @@ const DiagramAnalisis = () => {
     console.log('Token:', localStorage.getItem('token') ? 'EXISTS' : 'MISSING');
     console.log('Farm ID:', selectedFarmId);
     console.log('Time Range:', filters.timeRange);
+    console.log('Selected Data:', filters.data1);
 
     try {
       const periodMap = {
         '1 Hari Terakhir': '1day',
-        '1 Minggu Terakhir': '1week',
-        '1 Bulan Terakhir': '1month',
-        '6 Bulan Terakhir': '6months'
+        '1 Minggu Terakhir': '7days',
+        '1 Bulan Terakhir': '30days',
+        '6 Bulan Terakhir': '30days'
       };
-      const period = periodMap[filters.timeRange] || '1day';
+      const period = periodMap[filters.timeRange] || '7days';
 
       console.log('Calling ownerService.getAnalytics()...');
       const response = await ownerService.getAnalytics(selectedFarmId, period);
@@ -55,12 +66,42 @@ const DiagramAnalisis = () => {
       const data = response.data.data || response.data;
 
       if (data.manual_data && data.manual_data.length > 0) {
+        // Map data field based on selection
+        const dataFieldMap = {
+          'Konsumsi Pakan': 'konsumsi_pakan',
+          'Konsumsi Minum': 'konsumsi_air',
+          'Rata-rata Bobot': 'rata_rata_bobot',
+          'Jumlah Kematian': 'jumlah_kematian'
+        };
+
+        // Data 1 (Bar chart)
+        const selectedField = dataFieldMap[filters.data1] || 'konsumsi_pakan';
         const formattedData = data.manual_data.map(item => ({
-          time: new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-          value: item.konsumsi_pakan || 7
+          time: new Date(item.report_date || item.created_at).toLocaleDateString('id-ID', { weekday: 'long' }),
+          value: parseFloat(item[selectedField]) || 0
         }));
-        console.log('✅ Setting chart data from API:', formattedData);
+
+        console.log('✅ Setting chart data 1 from API:', formattedData);
         setChartData(formattedData);
+
+        // Calculate max value dynamically
+        const maxVal = Math.max(...formattedData.map(d => d.value));
+        setMaxValue(Math.ceil(maxVal * 1.2) || 25); // 20% buffer
+
+        // Data 2 (Line chart)
+        if (filters.data2 !== 'Tidak Ada') {
+          const selectedField2 = dataFieldMap[filters.data2] || 'konsumsi_pakan';
+          const formattedData2 = data.manual_data.map(item => ({
+            time: new Date(item.report_date || item.created_at).toLocaleDateString('id-ID', { weekday: 'long' }),
+            value: parseFloat(item[selectedField2]) || 0
+          }));
+
+          console.log('✅ Setting chart data 2 from API:', formattedData2);
+          setChartData2(formattedData2);
+
+          const maxVal2 = Math.max(...formattedData2.map(d => d.value));
+          setMaxValue2(Math.ceil(maxVal2 * 1.2) || 25);
+        }
       } else {
         console.warn('⚠️ No manual_data in API response');
       }
@@ -185,13 +226,36 @@ const DiagramAnalisis = () => {
             </select>
           </div>
 
-          <div className="flex items-end">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Keterangan:</span>
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 bg-orange-500 rounded"></span>
-                <span className="text-sm text-gray-600">Pakan (Kg)</span>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan:</label>
+            <div className="flex flex-col gap-2">
+              {filters.data1 !== 'Tidak Ada' && (
+                <div className="flex items-center gap-2">
+                  <span className={`w-4 h-4 rounded ${
+                    filters.data1 === 'Konsumsi Pakan' ? 'bg-orange-500' :
+                    filters.data1 === 'Konsumsi Minum' ? 'bg-blue-500' :
+                    filters.data1 === 'Rata-rata Bobot' ? 'bg-green-500' :
+                    'bg-red-500'
+                  }`}></span>
+                  <span className="text-sm text-gray-600">
+                    {filters.data1 === 'Konsumsi Pakan' && 'Pakan (Kg)'}
+                    {filters.data1 === 'Konsumsi Minum' && 'Minum (Liter)'}
+                    {filters.data1 === 'Rata-rata Bobot' && 'Bobot (Gram)'}
+                    {filters.data1 === 'Jumlah Kematian' && 'Kematian (Ekor)'}
+                  </span>
+                </div>
+              )}
+              {filters.data2 !== 'Tidak Ada' && (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-1 bg-purple-500 rounded"></div>
+                  <span className="text-sm text-gray-600">
+                    {filters.data2 === 'Konsumsi Pakan' && 'Pakan (Kg)'}
+                    {filters.data2 === 'Konsumsi Minum' && 'Minum (Liter)'}
+                    {filters.data2 === 'Rata-rata Bobot' && 'Bobot (Gram)'}
+                    {filters.data2 === 'Jumlah Kematian' && 'Kematian (Ekor)'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -199,36 +263,110 @@ const DiagramAnalisis = () => {
         {/* Chart */}
         <div className="flex gap-4">
           <div className="flex items-center">
-            <span className="text-sm font-medium text-gray-700 transform -rotate-90 whitespace-nowrap">Kg</span>
+            <span className="text-sm font-medium text-gray-700 transform -rotate-90 whitespace-nowrap">
+              {filters.data1 === 'Konsumsi Pakan' && 'Kg'}
+              {filters.data1 === 'Konsumsi Minum' && 'Liter'}
+              {filters.data1 === 'Rata-rata Bobot' && 'Gram'}
+              {filters.data1 === 'Jumlah Kematian' && 'Ekor'}
+            </span>
           </div>
           <div className="flex-1">
-            <div className="flex gap-4 h-80">
+            <div className="flex gap-4 h-96">
               {/* Y Axis */}
-              <div className="flex flex-col justify-between text-sm text-gray-600 py-4">
-                <span>20</span>
-                <span>15</span>
-                <span>10</span>
-                <span>5</span>
+              <div className="flex flex-col justify-between text-sm text-gray-600 pr-3">
+                <span>{maxValue}</span>
+                <span>{Math.floor(maxValue * 0.8)}</span>
+                <span>{Math.floor(maxValue * 0.6)}</span>
+                <span>{Math.floor(maxValue * 0.4)}</span>
+                <span>{Math.floor(maxValue * 0.2)}</span>
                 <span>0</span>
               </div>
               {/* Chart Bars */}
-              <div className="flex-1 flex items-end gap-6 p-4 border-l-2 border-b-2 border-gray-300">
-                {chartData.map((data, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                    <div
-                      className="w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t min-h-[20px] relative group"
-                      style={{ height: `${(data.value / maxValue) * 100}%` }}
-                    >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {data.value} Kg
+              <div className="flex-1 flex items-end justify-around gap-3 border-l-2 border-b-2 border-gray-300 px-5 relative">
+                {chartData.map((data, index) => {
+                  const barColorClass = filters.data1 === 'Konsumsi Pakan' ? 'from-orange-400 to-orange-600' :
+                                         filters.data1 === 'Konsumsi Minum' ? 'from-blue-400 to-blue-600' :
+                                         filters.data1 === 'Rata-rata Bobot' ? 'from-green-400 to-green-600' :
+                                         'from-red-400 to-red-600';
+
+                  const shadowColor = filters.data1 === 'Konsumsi Pakan' ? 'shadow-orange-300' :
+                                      filters.data1 === 'Konsumsi Minum' ? 'shadow-blue-300' :
+                                      filters.data1 === 'Rata-rata Bobot' ? 'shadow-green-300' :
+                                      'shadow-red-300';
+
+                  const hoverShadow = filters.data1 === 'Konsumsi Pakan' ? 'group-hover:shadow-orange-400' :
+                                      filters.data1 === 'Konsumsi Minum' ? 'group-hover:shadow-blue-400' :
+                                      filters.data1 === 'Rata-rata Bobot' ? 'group-hover:shadow-green-400' :
+                                      'group-hover:shadow-red-400';
+
+                  return (
+                    <div key={index} className="flex flex-col items-center gap-3 flex-1 h-full justify-end group">
+                      <div
+                        className={`w-full max-w-[70px] bg-gradient-to-b ${barColorClass} rounded-t-md relative cursor-pointer transition-all duration-300 group-hover:opacity-85 group-hover:-translate-y-1 shadow-md ${shadowColor} group-hover:shadow-lg ${hoverShadow}`}
+                        style={{ height: `${(data.value / maxValue) * 100}%`, minHeight: '8px' }}
+                      >
+                        <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-gray-900/85 text-white px-2.5 py-1.5 rounded-md text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                          {data.value} {filters.data1 === 'Konsumsi Pakan' ? 'kg' : filters.data1 === 'Konsumsi Minum' ? 'L' : filters.data1 === 'Rata-rata Bobot' ? 'g' : 'ekor'}
+                        </div>
                       </div>
+                      <span className="text-xs text-gray-600 font-medium">{data.time}</span>
                     </div>
-                    <span className="text-xs text-gray-600">{data.time}</span>
-                  </div>
-                ))}
+                  );
+                })}
+
+                {/* Line Chart Overlay - only if data2 is not "Tidak Ada" */}
+                {filters.data2 !== 'Tidak Ada' && chartData2.length > 0 && chartData.length > 0 && (
+                  <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+                    <defs>
+                      <filter id="line-shadow">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
+                      </filter>
+                    </defs>
+                    {/* Draw line */}
+                    <polyline
+                      points={chartData2.map((data, index) => {
+                        const totalBars = chartData.length;
+                        const barWidth = 100 / totalBars;
+                        const x = (index * barWidth) + (barWidth / 2);
+                        const y = 100 - ((data.value / maxValue2) * 100);
+                        return `${x}%,${y}%`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#8b5cf6"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                      filter="url(#line-shadow)"
+                    />
+                    {/* Draw points */}
+                    {chartData2.map((data, index) => {
+                      const totalBars = chartData.length;
+                      const barWidth = 100 / totalBars;
+                      const x = (index * barWidth) + (barWidth / 2);
+                      const y = 100 - ((data.value / maxValue2) * 100);
+                      return (
+                        <circle
+                          key={index}
+                          cx={`${x}%`}
+                          cy={`${y}%`}
+                          r="5"
+                          fill="#8b5cf6"
+                          stroke="white"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
               </div>
             </div>
-            <div className="text-center text-sm font-medium text-gray-700 mt-2">Jam</div>
+            <div className="text-center text-sm font-medium text-gray-700 mt-2">
+              {filters.timeRange === '1 Hari Terakhir' && 'Jam'}
+              {(filters.timeRange === '1 Minggu Terakhir' || filters.timeRange === '1 Bulan Terakhir') && 'Hari'}
+              {filters.timeRange === '6 Bulan Terakhir' && 'Bulan'}
+            </div>
           </div>
         </div>
 

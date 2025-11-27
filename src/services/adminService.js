@@ -6,7 +6,11 @@ const adminService = {
    * @returns {Promise} Dashboard summary and recent requests
    */
   getDashboard: () => {
-    return axiosInstance.get('/api/admin/dashboard');
+    console.log('🟢 [adminService] getDashboard() called');
+    console.log('🟢 [adminService] Token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+    const result = axiosInstance.get('/admin/dashboard');
+    console.log('🟢 [adminService] axios.get() returned promise');
+    return result;
   },
 
   /**
@@ -15,7 +19,7 @@ const adminService = {
    * @returns {Promise} Users list
    */
   getUsers: (search = '') => {
-    return axiosInstance.get('/api/admin/users', {
+    return axiosInstance.get('/admin/users', {
       params: { search }
     });
   },
@@ -26,7 +30,7 @@ const adminService = {
    * @returns {Promise} Created user
    */
   createUser: (data) => {
-    return axiosInstance.post('/api/admin/users', data);
+    return axiosInstance.post('/admin/users', data);
   },
 
   /**
@@ -36,7 +40,7 @@ const adminService = {
    * @returns {Promise} Updated user
    */
   updateUser: (id, data) => {
-    return axiosInstance.put(`/api/admin/users/${id}`, data);
+    return axiosInstance.put(`/admin/users/${id}`, data);
   },
 
   /**
@@ -45,7 +49,7 @@ const adminService = {
    * @returns {Promise} Success message
    */
   deleteUser: (id) => {
-    return axiosInstance.delete(`/api/admin/users/${id}`);
+    return axiosInstance.delete(`/admin/users/${id}`);
   },
 
   /**
@@ -53,7 +57,7 @@ const adminService = {
    * @returns {Promise} Farms list
    */
   getFarms: () => {
-    return axiosInstance.get('/api/admin/farms');
+    return axiosInstance.get('/admin/farms');
   },
 
   /**
@@ -62,7 +66,7 @@ const adminService = {
    * @returns {Promise} Created farm
    */
   createFarm: (data) => {
-    return axiosInstance.post('/api/admin/farms', data);
+    return axiosInstance.post('/admin/farms', data);
   },
 
   /**
@@ -71,7 +75,7 @@ const adminService = {
    * @returns {Promise} Farm config (EAV pattern)
    */
   getFarmConfig: (farmId) => {
-    return axiosInstance.get(`/api/admin/farms/${farmId}/config`);
+    return axiosInstance.get(`/admin/farms/${farmId}/config`);
   },
 
   /**
@@ -81,7 +85,7 @@ const adminService = {
    * @returns {Promise} Updated config
    */
   updateFarmConfig: (farmId, config) => {
-    return axiosInstance.put(`/api/admin/farms/${farmId}/config`, config);
+    return axiosInstance.put(`/admin/farms/${farmId}/config`, config);
   },
 
   /**
@@ -90,7 +94,7 @@ const adminService = {
    * @returns {Promise} Success message
    */
   resetFarmConfig: (farmId) => {
-    return axiosInstance.post(`/api/admin/farms/${farmId}/config/reset`);
+    return axiosInstance.post(`/admin/farms/${farmId}/config/reset`);
   },
 
   /**
@@ -100,7 +104,7 @@ const adminService = {
    * @returns {Promise} Paginated requests
    */
   getRequests: (sort = 'newest', page = 1) => {
-    return axiosInstance.get('/api/admin/requests', {
+    return axiosInstance.get('/admin/requests', {
       params: { sort, page }
     });
   },
@@ -112,7 +116,7 @@ const adminService = {
    * @returns {Promise} Updated request
    */
   updateRequestStatus: (id, status) => {
-    return axiosInstance.put(`/api/admin/requests/${id}/status`, { status });
+    return axiosInstance.put(`/admin/requests/${id}/status`, { status });
   },
 
   /**
@@ -120,7 +124,7 @@ const adminService = {
    * @returns {Promise} Owners list
    */
   getOwners: () => {
-    return axiosInstance.get('/api/admin/owners');
+    return axiosInstance.get('/admin/owners');
   },
 
   /**
@@ -129,7 +133,7 @@ const adminService = {
    * @returns {Promise} Peternaks list
    */
   getPeternaks: (ownerId) => {
-    return axiosInstance.get(`/api/admin/peternaks/${ownerId}`);
+    return axiosInstance.get(`/admin/peternaks/${ownerId}`);
   }
 };
 

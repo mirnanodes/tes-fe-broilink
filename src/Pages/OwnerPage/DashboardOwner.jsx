@@ -5,6 +5,7 @@ import RequestModal from '../../components/RequestModal';
 
 const Dashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('Mortalitas');
+  const [selectedFilter2, setSelectedFilter2] = useState('Tidak Ada');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
@@ -30,9 +31,16 @@ const Dashboard = () => {
     { time: '06:00', value: 4 },
   ]);
 
+  const [chartData2, setChartData2] = useState([
+    { time: '00:00', value: 2 },
+    { time: '12:00', value: 4 },
+    { time: '18:00', value: 3 },
+    { time: '06:00', value: 5 },
+  ]);
+
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [selectedFilter, selectedFilter2]);
 
   const fetchDashboardData = async () => {
     setIsLoadingData(true);
@@ -41,6 +49,7 @@ const Dashboard = () => {
     console.log('=== DASHBOARD OWNER: Starting data fetch ===');
     console.log('Token:', localStorage.getItem('token') ? 'EXISTS' : 'MISSING');
     console.log('User:', localStorage.getItem('user'));
+    console.log('Selected Filter:', selectedFilter);
 
     try {
       console.log('Calling ownerService.getDashboard()...');
@@ -55,25 +64,31 @@ const Dashboard = () => {
         const firstFarm = data.farms[0];
         console.log('✅ Setting farm data from API:', firstFarm);
         setFarmData({
-          name: firstFarm.farm_name || firstFarm.name,
-          status: firstFarm.status || 'Waspada',
-          temp: firstFarm.latest_sensor ? `${firstFarm.latest_sensor.temperature}°C` : '35°C'
+          name: firstFarm.farm_name || 'Kandang A',
+          status: firstFarm.status || 'normal',
+          temp: firstFarm.temperature ? `${firstFarm.temperature}°C` : '-'
         });
+
+        // Fetch analytics data for chart based on selected filter
+        if (firstFarm.farm_id) {
+          await fetchChartData(firstFarm.farm_id);
+        }
       } else {
         console.warn('⚠️ No farms data in API response');
       }
 
-      if (data.recent_reports && data.recent_reports.length > 0) {
-        const acts = data.recent_reports.map(r => ({
-          time: new Date(r.created_at).toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}),
-          activity: 'Laporan Manual',
-          detail: `Pakan: ${r.konsumsi_pakan}kg`,
-          status: 'Info'
+      // API returns 'activities' not 'recent_reports'
+      if (data.activities && data.activities.length > 0) {
+        const acts = data.activities.map(activity => ({
+          time: activity.time || '-',
+          activity: activity.type === 'sensor' ? 'Update Indikator' : 'Laporan Manual',
+          detail: activity.message || '-',
+          status: activity.type === 'sensor' ? 'Normal' : 'Info'
         }));
         console.log('✅ Setting activities from API:', acts);
         setActivities(acts);
       } else {
-        console.warn('⚠️ No recent_reports in API response');
+        console.warn('⚠️ No activities in API response, using mock data');
       }
 
       setIsLoadingData(false);
@@ -88,6 +103,52 @@ const Dashboard = () => {
 
       // Mock data already in state - will be displayed as fallback
       console.log('📊 Using mock data as fallback');
+    }
+  };
+
+  const fetchChartData = async (farmId) => {
+    try {
+      console.log('Fetching chart data for farm:', farmId, 'Filter1:', selectedFilter, 'Filter2:', selectedFilter2);
+      const response = await ownerService.getAnalytics(farmId, '1day');
+      const data = response.data.data || response.data;
+
+      console.log('✅ Analytics data:', data);
+
+      if (data.manual_data && data.manual_data.length > 0) {
+        // Map filter to data field
+        const filterFieldMap = {
+          'Mortalitas': 'jumlah_kematian',
+          'Bobot': 'rata_rata_bobot',
+          'Pakan': 'konsumsi_pakan',
+          'Minum': 'konsumsi_air'
+        };
+
+        // Data 1 (Bar chart)
+        const selectedField = filterFieldMap[selectedFilter] || 'jumlah_kematian';
+        const formattedChartData = data.manual_data.slice(0, 4).map(item => ({
+          time: new Date(item.report_date || item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          value: Math.round(parseFloat(item[selectedField]) || 0)
+        }));
+
+        console.log('✅ Setting chart data 1 (bars):', formattedChartData);
+        setChartData(formattedChartData);
+
+        // Data 2 (Line chart) - only if not "Tidak Ada"
+        if (selectedFilter2 !== 'Tidak Ada') {
+          const selectedField2 = filterFieldMap[selectedFilter2] || 'jumlah_kematian';
+          const formattedChartData2 = data.manual_data.slice(0, 4).map(item => ({
+            time: new Date(item.report_date || item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            value: Math.round(parseFloat(item[selectedField2]) || 0)
+          }));
+
+          console.log('✅ Setting chart data 2 (line):', formattedChartData2);
+          setChartData2(formattedChartData2);
+        }
+      } else {
+        console.warn('⚠️ No manual_data in analytics');
+      }
+    } catch (error) {
+      console.error('❌ Failed to fetch chart data:', error);
     }
   };
 
@@ -166,18 +227,37 @@ const Dashboard = () => {
 
         {/* Analisis Laporan Card */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Analisis Laporan (Terbaru)</h2>
-            <select
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={selectedFilter}
-              onChange={(e) => setSelectedFilter(e.target.value)}
-            >
-              <option>Mortalitas</option>
-              <option>Bobot</option>
-              <option>Pakan</option>
-              <option>Minum</option>
-            </select>
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-3">Analisis Laporan (Terbaru)</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Data 1 (Batang):</label>
+                <select
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                >
+                  <option>Mortalitas</option>
+                  <option>Bobot</option>
+                  <option>Pakan</option>
+                  <option>Minum</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Data 2 (Garis):</label>
+                <select
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={selectedFilter2}
+                  onChange={(e) => setSelectedFilter2(e.target.value)}
+                >
+                  <option>Mortalitas</option>
+                  <option>Bobot</option>
+                  <option>Pakan</option>
+                  <option>Minum</option>
+                  <option>Tidak Ada</option>
+                </select>
+              </div>
+            </div>
           </div>
           <div className="flex gap-4 h-72">
             {/* Y Axis */}
@@ -189,24 +269,84 @@ const Dashboard = () => {
             </div>
             {/* Chart Area */}
             <div className="flex-1 flex flex-col">
-              <div className="flex-1 flex items-end gap-8 p-4 border-l-2 border-b-2 border-gray-300">
-                {chartData.map((data, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                    <div
-                      className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t min-h-[20px] flex items-start justify-center pt-1"
-                      style={{ height: `${(data.value / 6) * 100}%` }}
-                    >
-                      <span className="text-xs font-semibold text-white">{data.value}</span>
+              <div className="flex-1 flex items-end gap-8 p-4 border-l-2 border-b-2 border-gray-300 relative">
+                {/* Bar Chart */}
+                {chartData.map((data, index) => {
+                  const barColor = selectedFilter === 'Mortalitas' ? 'from-red-500 to-red-400' :
+                                   selectedFilter === 'Bobot' ? 'from-green-500 to-green-400' :
+                                   selectedFilter === 'Pakan' ? 'from-orange-500 to-orange-400' :
+                                   'from-blue-500 to-blue-400';
+
+                  return (
+                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                      <div
+                        className={`w-full bg-gradient-to-t ${barColor} rounded-t min-h-[20px] flex items-start justify-center pt-1`}
+                        style={{ height: `${(data.value / 6) * 100}%` }}
+                      >
+                        <span className="text-xs font-semibold text-white">{data.value}</span>
+                      </div>
+                      <span className="text-xs text-gray-600">{data.time}</span>
                     </div>
-                    <span className="text-xs text-gray-600">{data.time}</span>
-                  </div>
-                ))}
+                  );
+                })}
+
+                {/* Line Chart Overlay - only if data2 is not "Tidak Ada" */}
+                {selectedFilter2 !== 'Tidak Ada' && chartData2.length > 0 && chartData.length > 0 && (
+                  <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+                    <defs>
+                      <filter id="shadow">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
+                      </filter>
+                    </defs>
+                    {/* Draw line */}
+                    <polyline
+                      points={chartData2.map((data, index) => {
+                        const totalBars = chartData.length;
+                        const barWidth = 100 / totalBars;
+                        const x = (index * barWidth) + (barWidth / 2);
+                        const y = 100 - ((data.value / 6) * 100);
+                        return `${x}%,${y}%`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#8b5cf6"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                      filter="url(#shadow)"
+                    />
+                    {/* Draw points */}
+                    {chartData2.map((data, index) => {
+                      const totalBars = chartData.length;
+                      const barWidth = 100 / totalBars;
+                      const x = (index * barWidth) + (barWidth / 2);
+                      const y = 100 - ((data.value / 6) * 100);
+                      return (
+                        <circle
+                          key={index}
+                          cx={`${x}%`}
+                          cy={`${y}%`}
+                          r="5"
+                          fill="#8b5cf6"
+                          stroke="white"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
               </div>
               <div className="text-center text-sm text-gray-600 font-medium mt-2">Jam</div>
             </div>
             {/* Y Label */}
             <div className="flex items-center">
-              <span className="text-sm text-gray-600 font-medium transform -rotate-90 whitespace-nowrap">Ekor</span>
+              <span className="text-sm text-gray-600 font-medium transform -rotate-90 whitespace-nowrap">
+                {selectedFilter === 'Mortalitas' ? 'Ekor' :
+                 selectedFilter === 'Bobot' ? 'Gram' :
+                 selectedFilter === 'Pakan' ? 'Kg' :
+                 'Liter'}
+              </span>
             </div>
           </div>
         </div>

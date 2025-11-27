@@ -99,20 +99,40 @@ const ManajemenPengguna = () => {
     return diffDays <= 30 ? 'aktif' : 'nonaktif';
   };
 
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const response = await adminService.getUsers();
+
       const data = response.data.data || response.data;
-      if (data && (data.users || Array.isArray(data))) {
-        setUsers(data.users || data);
-        if (data.stats) {
-          setStats(data.stats);
-        }
+
+      if (data && Array.isArray(data)) {
+        setUsers(data);
+
+        // Calculate stats from users array since API doesn't return stats
+        // API returns role as string, not object
+        const ownerCount = data.filter(u => u.role === 'Owner').length;
+        const peternakCount = data.filter(u => u.role === 'Peternak').length;
+        const calculatedStats = {
+          total: data.length,
+          owner: ownerCount,
+          peternak: peternakCount
+        };
+        setStats(calculatedStats);
       }
     } catch (error) {
       const errorMessage = handleError('ManajemenPengguna fetchUsers', error);
-      console.error(errorMessage);
       // Keep mock data (already in state)
     } finally {
       setLoading(false);
@@ -127,12 +147,21 @@ const ManajemenPengguna = () => {
     try {
       const response = await adminService.getUsers(searchQuery);
       const data = response.data.data || response.data;
-      if (data && (data.users || Array.isArray(data))) {
-        setUsers(data.users || data);
+
+      if (data && Array.isArray(data)) {
+        setUsers(data);
+
+        // Recalculate stats for search results
+        const ownerCount = data.filter(u => u.role?.name === 'Owner' || u.role_id === 2).length;
+        const peternakCount = data.filter(u => u.role?.name === 'Peternak' || u.role_id === 3).length;
+        setStats({
+          total: data.length,
+          owner: ownerCount,
+          peternak: peternakCount
+        });
       }
     } catch (error) {
       const errorMessage = handleError('ManajemenPengguna handleSearch', error);
-      console.error(errorMessage);
       // Keep current data on search error
     }
   };
@@ -185,25 +214,32 @@ const ManajemenPengguna = () => {
           name: formData.name,
           password: formData.password,
           phone_number: formData.phone_number,
-          status: formData.status,
+          status: formData.status || 'active',
         };
 
         if (activeTab === 'owner') {
           payload.role_id = 2;
           payload.email = formData.email;
-          if (formData.farm_name) {
-            payload.farm_name = formData.farm_name;
-            payload.location = formData.location;
-            payload.farm_area = formData.farm_area;
-          }
         } else {
           payload.role_id = 3;
-          payload.owner_id = formData.owner_id;
+          payload.email = formData.email || `${formData.username}@broilink.com`; // Default email for peternak
         }
 
-        await adminService.createUser(payload);
+        const response = await adminService.createUser(payload);
       } else if (modalType === 'edit') {
-        await adminService.updateUser(selectedUser.user_id, formData);
+        const editPayload = {
+          username: formData.username,
+          name: formData.name,
+          email: formData.email,
+          phone_number: formData.phone_number,
+        };
+
+        // Only include password if it's not empty
+        if (formData.password && formData.password.trim() !== '') {
+          editPayload.password = formData.password;
+        }
+
+        const response = await adminService.updateUser(selectedUser.user_id, editPayload);
       }
 
       setShowModal(false);
@@ -212,7 +248,7 @@ const ManajemenPengguna = () => {
       alert('Berhasil!');
     } catch (error) {
       const errorMessage = handleError('ManajemenPengguna handleSubmit', error);
-      alert(errorMessage);
+      alert('Gagal: ' + errorMessage);
     }
   };
 
@@ -358,29 +394,33 @@ const ManajemenPengguna = () => {
                           </td>
                         </tr>
                       ) : (
-                        users.map((user) => {
-                          const status = calculateStatus(user.last_login);
+                        users.slice((currentPage - 1) * 5, currentPage * 5).map((user) => {
+                          const status = user.status || calculateStatus(user.last_login);
+                          const displayEmail = typeof user.email === 'string' ? user.email : (user.email?.email || '—');
+                          const displayName = typeof user.name === 'string' ? user.name : (user.name?.name || '—');
+                          const displayRole = typeof user.role === 'string' ? user.role : (user.role?.name || 'N/A');
+
                           return (
                             <tr key={user.user_id || user.id} className="hover:bg-blue-50 transition-colors">
-                              <td className="px-4 py-4 text-sm font-medium text-gray-900">{user.name}</td>
-                              <td className="px-4 py-4 text-sm text-gray-600">{user.role?.name || 'N/A'}</td>
+                              <td className="px-4 py-4 text-sm font-medium text-gray-900">{displayName}</td>
+                              <td className="px-4 py-4 text-sm text-gray-600">{displayRole}</td>
                               <td className="px-4 py-4">
                                 <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                  status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                  status === 'active' || status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                 }`}>
-                                  {status === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                                  {status === 'active' || status === 'aktif' ? 'Aktif' : 'Nonaktif'}
                                 </span>
                               </td>
                               <td className="px-4 py-4 text-sm text-gray-600">
-                                {user.date_joined || '—'}
+                                {user.date_joined ? formatDateTime(user.date_joined) : '—'}
                               </td>
                               <td className="px-4 py-4 text-sm text-gray-600">
-                                {user.last_login || '—'}
+                                {user.last_login ? formatDateTime(user.last_login) : '—'}
                               </td>
-                              <td className="px-4 py-4 text-sm text-gray-600">{user.email}</td>
+                              <td className="px-4 py-4 text-sm text-gray-600">{displayEmail}</td>
                               <td className="px-4 py-4">
                                 <div className="flex items-center justify-center gap-2">
-                                  {user.role?.name === 'Owner' && (
+                                  {(displayRole === 'Owner') && (
                                     <button
                                       onClick={() => openAddFarmModal(user)}
                                       className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"

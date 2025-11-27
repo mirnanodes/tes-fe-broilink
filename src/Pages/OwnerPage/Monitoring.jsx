@@ -26,23 +26,33 @@ const Monitoring = () => {
     { time: '20.00', value: 35 }
   ]);
 
+  const [chartData2, setChartData2] = useState([
+    { time: '00.00', value: 65 },
+    { time: '04.00', value: 70 },
+    { time: '08.00', value: 68 },
+    { time: '12.00', value: 60 },
+    { time: '16.00', value: 75 },
+    { time: '20.00', value: 72 }
+  ]);
+
   const [selectedFarmId, setSelectedFarmId] = useState(1);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
-  const maxValue = 40;
+  const [maxValue, setMaxValue] = useState(40);
+  const [maxValue2, setMaxValue2] = useState(100);
 
   useEffect(() => {
     fetchMonitoringData();
-  }, [filters.timeRange, selectedFarmId]);
+  }, [filters.timeRange, selectedFarmId, filters.data1, filters.data2]);
 
   const fetchMonitoringData = async () => {
     setIsLoadingData(true);
     setApiError(null);
 
     console.log('=== MONITORING: Starting data fetch ===');
-    console.log('Token:', localStorage.getItem('token') ? 'EXISTS' : 'MISSING');
     console.log('Farm ID:', selectedFarmId);
     console.log('Time Range:', filters.timeRange);
+    console.log('Selected Data:', filters.data1);
 
     try {
       const periodMap = {
@@ -53,49 +63,81 @@ const Monitoring = () => {
       };
       const period = periodMap[filters.timeRange] || '1day';
 
-      console.log('Calling ownerService.getMonitoring()...');
       const response = await ownerService.getMonitoring(selectedFarmId, period);
-
-      console.log('✅ API Response received:', response);
-      console.log('Response data:', response.data);
 
       const data = response.data.data || response.data;
 
-      if (data.current_sensor) {
-        console.log('✅ Setting sensor data from API:', data.current_sensor);
+      console.log('✅ Monitoring Data:', data);
+
+      if (data.current) {
         setSensorData({
-          temperature: data.current_sensor.temperature || 35,
-          humidity: data.current_sensor.humidity || 75,
-          ammonia: data.current_sensor.ammonia || 18,
-          status: data.current_sensor.status || 'Bahaya'
+          temperature: data.current.temperature || 35,
+          humidity: data.current.humidity || 75,
+          ammonia: data.current.ammonia || 18,
+          status: data.current.status || 'Bahaya'
         });
-      } else {
-        console.warn('⚠️ No current_sensor in API response');
       }
 
-      if (data.historical_data && data.historical_data.length > 0) {
-        const formattedData = data.historical_data.map(item => ({
-          time: new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-          value: item.temperature || 24
+      if (data.historical && data.historical.length > 0) {
+        // Map data field based on selection
+        const dataFieldMap = {
+          'Suhu Aktual': 'temperature',
+          'Kelembapan Aktual': 'humidity',
+          'Kadar Amonia': 'ammonia'
+        };
+
+        // Data 1 (Bar chart)
+        const selectedField = dataFieldMap[filters.data1] || 'temperature';
+        const formattedData = data.historical.map(item => ({
+          time: item.timestamp || item.created_at,
+          value: parseFloat(item[selectedField]) || 0
         }));
-        console.log('✅ Setting chart data from API:', formattedData);
+
+        console.log('✅ Setting chart data 1:', formattedData);
         setChartData(formattedData);
-      } else {
-        console.warn('⚠️ No historical_data in API response');
+
+        // Calculate max value dynamically based on data type
+        const maxVal = Math.max(...formattedData.map(d => d.value));
+        let calculatedMax = Math.ceil(maxVal * 1.2); // 20% buffer
+
+        // Set minimum max values based on data type
+        if (selectedField === 'temperature' && calculatedMax < 40) calculatedMax = 40;
+        if (selectedField === 'humidity' && calculatedMax < 100) calculatedMax = 100;
+        if (selectedField === 'ammonia' && calculatedMax < 30) calculatedMax = 30;
+
+        setMaxValue(calculatedMax);
+
+        // Data 2 (Line chart)
+        if (filters.data2 !== 'Tidak Ada') {
+          const selectedField2 = dataFieldMap[filters.data2] || 'temperature';
+          const formattedData2 = data.historical.map(item => ({
+            time: item.timestamp || item.created_at,
+            value: parseFloat(item[selectedField2]) || 0
+          }));
+
+          console.log('✅ Setting chart data 2:', formattedData2);
+          setChartData2(formattedData2);
+
+          const maxVal2 = Math.max(...formattedData2.map(d => d.value));
+          let calculatedMax2 = Math.ceil(maxVal2 * 1.2);
+
+          if (selectedField2 === 'temperature' && calculatedMax2 < 40) calculatedMax2 = 40;
+          if (selectedField2 === 'humidity' && calculatedMax2 < 100) calculatedMax2 = 100;
+          if (selectedField2 === 'ammonia' && calculatedMax2 < 30) calculatedMax2 = 30;
+
+          setMaxValue2(calculatedMax2);
+        }
       }
 
       setIsLoadingData(false);
     } catch (error) {
       const errorMessage = handleError('Monitoring fetchData', error);
       console.error('❌ API ERROR:', errorMessage);
-      console.error('Error details:', error);
-      console.error('Error response:', error.response);
 
       setApiError(errorMessage);
       setIsLoadingData(false);
 
       // Fallback to mock data - already in state
-      console.log('📊 Using mock data as fallback');
     }
   };
 
@@ -249,13 +291,33 @@ const Monitoring = () => {
             </select>
           </div>
 
-          <div className="flex items-end">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Keterangan:</span>
-              <div className="flex items-center gap-2">
-                <span className="w-4 h-4 bg-orange-500 rounded"></span>
-                <span className="text-sm text-gray-600">Suhu (°C)</span>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan:</label>
+            <div className="flex flex-col gap-2">
+              {filters.data1 !== 'Tidak Ada' && (
+                <div className="flex items-center gap-2">
+                  <span className={`w-4 h-4 rounded ${
+                    filters.data1 === 'Suhu Aktual' ? 'bg-orange-500' :
+                    filters.data1 === 'Kelembapan Aktual' ? 'bg-blue-500' :
+                    'bg-green-500'
+                  }`}></span>
+                  <span className="text-sm text-gray-600">
+                    {filters.data1 === 'Suhu Aktual' && 'Suhu (°C)'}
+                    {filters.data1 === 'Kelembapan Aktual' && 'Kelembapan (%)'}
+                    {filters.data1 === 'Kadar Amonia' && 'Amonia (ppm)'}
+                  </span>
+                </div>
+              )}
+              {filters.data2 !== 'Tidak Ada' && (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-1 bg-purple-500 rounded"></div>
+                  <span className="text-sm text-gray-600">
+                    {filters.data2 === 'Suhu Aktual' && 'Suhu (°C)'}
+                    {filters.data2 === 'Kelembapan Aktual' && 'Kelembapan (%)'}
+                    {filters.data2 === 'Kadar Amonia' && 'Amonia (ppm)'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -263,36 +325,105 @@ const Monitoring = () => {
         {/* Chart */}
         <div className="flex gap-4">
           <div className="flex items-center">
-            <span className="text-sm font-medium text-gray-700 transform -rotate-90 whitespace-nowrap">°C</span>
+            <span className="text-sm font-medium text-gray-700 transform -rotate-90 whitespace-nowrap">
+              {filters.data1 === 'Suhu Aktual' && '°C'}
+              {filters.data1 === 'Kelembapan Aktual' && '%'}
+              {filters.data1 === 'Kadar Amonia' && 'ppm'}
+            </span>
           </div>
           <div className="flex-1">
-            <div className="flex gap-4 h-80">
+            <div className="flex gap-4 h-96">
               {/* Y Axis */}
-              <div className="flex flex-col justify-between text-sm text-gray-600 py-4">
-                <span>40</span>
-                <span>30</span>
-                <span>20</span>
-                <span>10</span>
+              <div className="flex flex-col justify-between text-sm text-gray-600 pr-3">
+                <span>{maxValue}</span>
+                <span>{Math.floor(maxValue * 0.75)}</span>
+                <span>{Math.floor(maxValue * 0.5)}</span>
+                <span>{Math.floor(maxValue * 0.25)}</span>
                 <span>0</span>
               </div>
               {/* Chart Bars */}
-              <div className="flex-1 flex items-end gap-6 p-4 border-l-2 border-b-2 border-gray-300">
-                {chartData.map((data, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                    <div
-                      className="w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-t min-h-[20px] relative group"
-                      style={{ height: `${(data.value / maxValue) * 100}%` }}
-                    >
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {data.value}°C
+              <div className="flex-1 flex items-end justify-around gap-3 border-l-2 border-b-2 border-gray-300 px-5 relative">
+                {chartData.map((data, index) => {
+                  const barColorClass = filters.data1 === 'Suhu Aktual' ? 'from-orange-400 to-orange-600' :
+                                         filters.data1 === 'Kelembapan Aktual' ? 'from-blue-400 to-blue-600' :
+                                         'from-green-400 to-green-600';
+
+                  const shadowColor = filters.data1 === 'Suhu Aktual' ? 'shadow-orange-300' :
+                                      filters.data1 === 'Kelembapan Aktual' ? 'shadow-blue-300' :
+                                      'shadow-green-300';
+
+                  const hoverShadow = filters.data1 === 'Suhu Aktual' ? 'group-hover:shadow-orange-400' :
+                                      filters.data1 === 'Kelembapan Aktual' ? 'group-hover:shadow-blue-400' :
+                                      'group-hover:shadow-green-400';
+
+                  return (
+                    <div key={index} className="flex flex-col items-center gap-3 flex-1 h-full justify-end group">
+                      <div
+                        className={`w-full max-w-[70px] bg-gradient-to-b ${barColorClass} rounded-t-md relative cursor-pointer transition-all duration-300 group-hover:opacity-85 group-hover:-translate-y-1 shadow-md ${shadowColor} group-hover:shadow-lg ${hoverShadow}`}
+                        style={{ height: `${(data.value / maxValue) * 100}%`, minHeight: '8px' }}
+                      >
+                        <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-gray-900/85 text-white px-2.5 py-1.5 rounded-md text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
+                          {data.value} {filters.data1 === 'Suhu Aktual' ? '°C' : filters.data1 === 'Kelembapan Aktual' ? '%' : 'ppm'}
+                        </div>
                       </div>
+                      <span className="text-xs text-gray-600 font-medium">{data.time}</span>
                     </div>
-                    <span className="text-xs text-gray-600">{data.time}</span>
-                  </div>
-                ))}
+                  );
+                })}
+
+                {/* Line Chart Overlay - only if data2 is not "Tidak Ada" */}
+                {filters.data2 !== 'Tidak Ada' && chartData2.length > 0 && chartData.length > 0 && (
+                  <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+                    <defs>
+                      <filter id="monitor-shadow">
+                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
+                      </filter>
+                    </defs>
+                    {/* Draw line */}
+                    <polyline
+                      points={chartData2.map((data, index) => {
+                        const totalBars = chartData.length;
+                        const barWidth = 100 / totalBars;
+                        const x = (index * barWidth) + (barWidth / 2);
+                        const y = 100 - ((data.value / maxValue2) * 100);
+                        return `${x}%,${y}%`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#8b5cf6"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      vectorEffect="non-scaling-stroke"
+                      filter="url(#monitor-shadow)"
+                    />
+                    {/* Draw points */}
+                    {chartData2.map((data, index) => {
+                      const totalBars = chartData.length;
+                      const barWidth = 100 / totalBars;
+                      const x = (index * barWidth) + (barWidth / 2);
+                      const y = 100 - ((data.value / maxValue2) * 100);
+                      return (
+                        <circle
+                          key={index}
+                          cx={`${x}%`}
+                          cy={`${y}%`}
+                          r="5"
+                          fill="#8b5cf6"
+                          stroke="white"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
               </div>
             </div>
-            <div className="text-center text-sm font-medium text-gray-700 mt-2">Jam</div>
+            <div className="text-center text-sm font-medium text-gray-700 mt-2">
+              {filters.timeRange === '1 Hari Terakhir' && 'Jam'}
+              {(filters.timeRange === '1 Minggu Terakhir' || filters.timeRange === '1 Bulan Terakhir') && 'Hari'}
+              {filters.timeRange === '6 Bulan Terakhir' && 'Bulan'}
+            </div>
           </div>
         </div>
       </div>

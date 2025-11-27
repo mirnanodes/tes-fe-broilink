@@ -1,23 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import authService from '../services/authService';
+import broilinkLogo from '../assets/image/logo-broilink.png';
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const navigate = useNavigate();
   const userRole = localStorage.getItem('userRole') || 'Administrator';
 
   const handleLogout = async () => {
-    try {
-      await axios.post('/api/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      localStorage.removeItem('token');
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userRole');
-      navigate('/login');
-    }
+    await authService.logout();
   };
 
   return (
@@ -25,15 +15,7 @@ const Header = () => {
       <div className="h-full px-6 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
-            <div className="grid grid-cols-2 gap-0.5">
-              <div className="w-2 h-2 bg-white rounded-sm"></div>
-              <div className="w-2 h-2 bg-white rounded-sm"></div>
-              <div className="w-2 h-2 bg-white rounded-sm"></div>
-              <div className="w-2 h-2 bg-white rounded-sm"></div>
-            </div>
-          </div>
-          <span className="text-lg font-semibold text-gray-700">Smartfarm</span>
+          <img src={broilinkLogo} alt="Broilink Logo" className="h-10 w-auto" />
         </div>
 
         {/* User Profile */}

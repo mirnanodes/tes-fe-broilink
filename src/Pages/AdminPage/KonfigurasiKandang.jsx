@@ -12,7 +12,7 @@ const InputGroup = ({ label, name, value, onChange, unit = '' }) => (
         type="number"
         step="0.01"
         name={name}
-        value={value}
+        value={value || ''}
         onChange={onChange}
         className="w-full px-3 py-2 pr-12 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-sm"
         required
@@ -51,6 +51,11 @@ const KonfigurasiKandang = () => {
   const [modalMessage, setModalMessage] = useState('');
   const [selectedKandang, setSelectedKandang] = useState('');
   const [hasDefault, setHasDefault] = useState(false);
+  const [peternaks, setPeternaks] = useState([]);
+  const [currentOwnerId, setCurrentOwnerId] = useState(null);
+  const [csvFile, setCsvFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
 
   useEffect(() => {
     fetchFarms();
@@ -93,15 +98,39 @@ const KonfigurasiKandang = () => {
     try {
       setLoading(true);
       const response = await adminService.getFarmConfig(farmId);
-      const data = response.data.data || response.data;
-      setConfig(data || config);
+
+      const farmData = response.data.data || response.data;
+
+      if (farmData && farmData.config) {
+        setConfig(farmData.config);
+      } else if (farmData && typeof farmData === 'object' && !farmData.config) {
+        // Data is the config itself
+        setConfig(farmData);
+      }
+
+      // Get owner_id from selected farm
+      const selectedFarm = farms.find(f => (f.farm_id || f.id) === parseInt(farmId));
+      if (selectedFarm && selectedFarm.owner_id) {
+        setCurrentOwnerId(selectedFarm.owner_id);
+        fetchPeternaks(selectedFarm.owner_id);
+      }
     } catch (error) {
       const errorMessage = handleError('KonfigurasiKandang fetchConfig', error);
-      console.error(errorMessage);
       // Keep default config when API fails (already in state)
-      console.log('Using default configuration values');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPeternaks = async (ownerId) => {
+    try {
+      const response = await adminService.getPeternaks(ownerId);
+      const data = response.data.data || response.data;
+      setPeternaks(Array.isArray(data) ? data : []);
+    } catch (error) {
+      const errorMessage = handleError('KonfigurasiKandang fetchPeternaks', error);
+      console.error(errorMessage);
+      setPeternaks([]);
     }
   };
 
@@ -115,9 +144,13 @@ const KonfigurasiKandang = () => {
     }
 
     try {
-      await adminService.updateFarmConfig(selectedKandang, config);
+      const response = await adminService.updateFarmConfig(selectedKandang, config);
+
       setModalMessage('Konfigurasi berhasil disimpan!');
       setShowSuccessModal(true);
+
+      // Refresh config after save
+      await fetchConfig(selectedKandang);
     } catch (error) {
       const errorMessage = handleError('KonfigurasiKandang handleSubmit', error);
       alert('Gagal menyimpan konfigurasi: ' + errorMessage);
@@ -127,18 +160,15 @@ const KonfigurasiKandang = () => {
   };
 
   const handleReset = async () => {
-    const defaultConfig = localStorage.getItem('defaultConfig');
-    if (!defaultConfig) {
-      alert('Belum ada konfigurasi default yang disimpan');
-      return;
-    }
-
     try {
-      await adminService.resetFarmConfig(selectedKandang);
+      const response = await adminService.resetFarmConfig(selectedKandang);
+
       setModalMessage('Konfigurasi berhasil direset ke default!');
       setShowResetModal(false);
       setShowSuccessModal(true);
-      fetchConfig(selectedKandang);
+
+      // Refresh config after reset
+      await fetchConfig(selectedKandang);
     } catch (error) {
       const errorMessage = handleError('KonfigurasiKandang handleReset', error);
       alert('Gagal reset konfigurasi: ' + errorMessage);
@@ -148,6 +178,62 @@ const KonfigurasiKandang = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setConfig(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.name.endsWith('.csv') && !file.type.includes('csv')) {
+        alert('Please select a CSV file');
+        e.target.value = '';
+        return;
+      }
+      setCsvFile(file);
+      setUploadResult(null);
+    }
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      alert('Please select a CSV file first');
+      return;
+    }
+
+    if (!selectedKandang) {
+      alert('Please select a kandang first');
+      return;
+    }
+
+    setUploading(true);
+    setUploadResult(null);
+
+    try {
+      const response = await adminService.uploadIotCsv(selectedKandang, csvFile);
+      const data = response.data.data || response.data;
+
+      setUploadResult({
+        success: true,
+        message: response.data.message || 'Upload successful',
+        inserted: data.inserted,
+        errors: data.errors || [],
+        total_rows: data.total_rows
+      });
+
+      // Clear file input
+      setCsvFile(null);
+      const fileInput = document.getElementById('csv-file-input');
+      if (fileInput) fileInput.value = '';
+
+    } catch (error) {
+      const errorMessage = handleError('KonfigurasiKandang handleCsvUpload', error);
+      setUploadResult({
+        success: false,
+        message: errorMessage
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (loading) {
@@ -250,6 +336,169 @@ const KonfigurasiKandang = () => {
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
                   <h2 className="text-lg font-bold text-gray-900 mb-4">Bobot Rata-rata Awal</h2>
                   <InputGroup label="Bobot (gram)" name="bobot_awal" value={config.bobot_awal || ''} onChange={handleInputChange} unit="g" />
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">Peternak Penanggung Jawab</h2>
+                  {peternaks.length > 0 ? (
+                    <div className="space-y-3">
+                      {peternaks.map((peternak, index) => (
+                        <div key={peternak.user_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                            {peternak.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{peternak.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{peternak.email}</p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Aktif
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <p className="mt-2 text-sm text-gray-500">Belum ada peternak yang ditugaskan</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                  <h2 className="text-lg font-bold text-gray-900 mb-4">Upload Data IoT (CSV)</h2>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-cyan-500 transition-colors">
+                      <div className="flex flex-col items-center gap-3">
+                        <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                        <div className="text-center">
+                          <label htmlFor="csv-file-input" className="cursor-pointer">
+                            <span className="text-sm font-medium text-cyan-600 hover:text-cyan-700">Click to upload</span>
+                            <span className="text-sm text-gray-500"> or drag and drop</span>
+                          </label>
+                          <p className="text-xs text-gray-500 mt-1">CSV file with headers: timestamp, temperature, humidity, ammonia</p>
+                        </div>
+                        <input
+                          id="csv-file-input"
+                          type="file"
+                          accept=".csv,text/csv"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+
+                    {csvFile && (
+                      <div className="flex items-center gap-3 p-3 bg-cyan-50 border border-cyan-200 rounded-lg">
+                        <svg className="w-8 h-8 text-cyan-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{csvFile.name}</p>
+                          <p className="text-xs text-gray-500">{(csvFile.size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setCsvFile(null);
+                            const fileInput = document.getElementById('csv-file-input');
+                            if (fileInput) fileInput.value = '';
+                          }}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleCsvUpload}
+                      disabled={!csvFile || uploading}
+                      className="w-full px-4 py-2.5 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors font-medium disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {uploading ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                          </svg>
+                          <span>Upload CSV</span>
+                        </>
+                      )}
+                    </button>
+
+                    {uploadResult && (
+                      <div className={`p-4 rounded-lg border ${uploadResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                        <div className="flex items-start gap-3">
+                          {uploadResult.success ? (
+                            <svg className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          )}
+                          <div className="flex-1">
+                            <p className={`text-sm font-semibold ${uploadResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                              {uploadResult.message}
+                            </p>
+                            {uploadResult.success && (
+                              <div className="mt-2 text-xs text-green-800 space-y-1">
+                                <p>Total rows: {uploadResult.total_rows}</p>
+                                <p>Successfully inserted: {uploadResult.inserted}</p>
+                                {uploadResult.errors && uploadResult.errors.length > 0 && (
+                                  <div className="mt-2">
+                                    <p className="font-medium">Errors found:</p>
+                                    <ul className="mt-1 ml-4 list-disc space-y-0.5">
+                                      {uploadResult.errors.slice(0, 5).map((error, idx) => (
+                                        <li key={idx} className="text-red-700">{error}</li>
+                                      ))}
+                                      {uploadResult.errors.length > 5 && (
+                                        <li className="text-red-700">... and {uploadResult.errors.length - 5} more errors</li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex gap-3">
+                        <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div className="text-xs text-blue-800">
+                          <p className="font-medium mb-1">Format CSV yang diperlukan:</p>
+                          <ul className="ml-4 list-disc space-y-0.5">
+                            <li>Header: timestamp, temperature, humidity, ammonia</li>
+                            <li>Timestamp format: YYYY-MM-DD HH:MM:SS</li>
+                            <li>Temperature: 0-50°C</li>
+                            <li>Humidity: 0-100%</li>
+                            <li>Ammonia: 0-100 ppm</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

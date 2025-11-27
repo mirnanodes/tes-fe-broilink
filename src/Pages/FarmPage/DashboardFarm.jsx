@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import peternakService from '../../services/peternakService';
+import { handleError } from '../../utils/errorHandler';
 import './DashboardFarm.css';
 
 
@@ -9,7 +10,14 @@ const DashboardPeternak = () => {
     data2: 'Tidak Ada'
   });
 
-  const chartData = [
+  const [sensorData, setSensorData] = useState({
+    temperature: 35,
+    humidity: 75,
+    ammonia: 18,
+    status: 'normal'
+  });
+
+  const [chartData, setChartData] = useState([
     { day: 'Senin', value: 8 },
     { day: 'Selasa', value: 4 },
     { day: 'Rabu', value: 3 },
@@ -17,12 +25,90 @@ const DashboardPeternak = () => {
     { day: 'Jumat', value: 4 },
     { day: 'Sabtu', value: 7 },
     { day: 'Minggu', value: 7 }
-  ];
+  ]);
 
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+  const [farmName, setFarmName] = useState('');
   const maxValue = 25;
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [filters.data1]);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const response = await peternakService.getDashboard();
+      const data = response.data.data || response.data;
+
+      console.log('✅ Peternak Dashboard Data:', data);
+
+      // Update sensor data
+      if (data.current) {
+        setSensorData({
+          temperature: data.current.temperature || 35,
+          humidity: data.current.humidity || 75,
+          ammonia: data.current.ammonia || 18,
+          status: data.current.status || 'normal'
+        });
+      }
+
+      // Update farm name
+      if (data.farm_name) {
+        setFarmName(data.farm_name);
+      }
+
+      // Update chart data based on selected filter
+      if (data.summary) {
+        const dataMap = {
+          'Konsumsi Pakan': data.summary.pakan || [],
+          'Konsumsi Minum': data.summary.minum || [],
+          'Rata-rata Bobot': data.summary.bobot || [],
+          'Jumlah Kematian': data.summary.kematian || []
+        };
+
+        const selectedData = dataMap[filters.data1] || data.summary.pakan || [];
+        const labels = data.summary.labels || ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+        const formattedChartData = labels.map((label, index) => ({
+          day: label,
+          value: selectedData[index] || 0
+        }));
+
+        setChartData(formattedChartData);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      const errorMessage = handleError('DashboardPeternak fetchData', error);
+      console.error('❌ API ERROR:', errorMessage);
+      setApiError(errorMessage);
+      setLoading(false);
+      // Keep mock data as fallback (already in state)
+    }
+  };
 
   return (
     <div className="dashboard-peternak-container">
+      {/* Error Alert */}
+      {apiError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-800">Gagal Memuat Data dari Backend</h3>
+              <p className="text-sm text-red-700 mt-1">{apiError}</p>
+              <p className="text-xs text-red-600 mt-2">📊 Menampilkan data mock sebagai fallback.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Metrics Cards */}
       <div className="metrics-grid-peternak">
         <div className="metric-card-peternak">
@@ -33,7 +119,7 @@ const DashboardPeternak = () => {
           </div>
           <div className="metric-info-peternak">
             <span className="metric-label-peternak">Suhu Aktual</span>
-            <span className="metric-value-peternak">35°C</span>
+            <span className="metric-value-peternak">{sensorData.temperature}°C</span>
           </div>
         </div>
 
@@ -45,7 +131,7 @@ const DashboardPeternak = () => {
           </div>
           <div className="metric-info-peternak">
             <span className="metric-label-peternak">Kelembapan Aktual</span>
-            <span className="metric-value-peternak">75%</span>
+            <span className="metric-value-peternak">{sensorData.humidity}%</span>
           </div>
         </div>
 
@@ -57,22 +143,24 @@ const DashboardPeternak = () => {
           </div>
           <div className="metric-info-peternak">
             <span className="metric-label-peternak">Kadar Amonia</span>
-            <span className="metric-value-peternak">18 ppm</span>
+            <span className="metric-value-peternak">{sensorData.ammonia} ppm</span>
           </div>
         </div>
 
         <div className="metric-card-peternak">
           <div className="metric-icon-peternak status-icon">
             <svg width="80" height="80" viewBox="0 0 80 80">
-              <circle cx="40" cy="40"  fill="#4caf50"/>
-              <path d="M40 22 L26 36 L26 58 L54 58 L54 36 Z" fill="#4caf50"/>
-              <path d="M34 44 L46 44 L46 58 L34 58 Z" fill="#4caf50"/>
-              <path d="M40 16 L20 36 L24 36 L40 20 L56 36 L60 36 Z" fill="#4caf50"/>
+              <circle cx="40" cy="40" fill={sensorData.status === 'normal' ? '#4caf50' : sensorData.status === 'waspada' ? '#ff9800' : '#f44336'}/>
+              <path d="M40 22 L26 36 L26 58 L54 58 L54 36 Z" fill={sensorData.status === 'normal' ? '#4caf50' : sensorData.status === 'waspada' ? '#ff9800' : '#f44336'}/>
+              <path d="M34 44 L46 44 L46 58 L34 58 Z" fill={sensorData.status === 'normal' ? '#4caf50' : sensorData.status === 'waspada' ? '#ff9800' : '#f44336'}/>
+              <path d="M40 16 L20 36 L24 36 L40 20 L56 36 L60 36 Z" fill={sensorData.status === 'normal' ? '#4caf50' : sensorData.status === 'waspada' ? '#ff9800' : '#f44336'}/>
             </svg>
           </div>
           <div className="metric-info-peternak">
             <span className="metric-label-peternak">Status Kandang</span>
-            <span className="status-badge-normal">Normal</span>
+            <span className={`status-badge-${sensorData.status === 'normal' ? 'normal' : sensorData.status === 'waspada' ? 'warning' : 'danger'}`}>
+              {sensorData.status === 'normal' ? 'Normal' : sensorData.status === 'waspada' ? 'Waspada' : 'Bahaya'}
+            </span>
           </div>
         </div>
       </div>
