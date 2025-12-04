@@ -23,7 +23,7 @@
 /* --- Sisi Form (Kiri) --- */
 .login-form-side {
     flex: 2;
-    padding: 40px 20px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -49,14 +49,14 @@
 /* Form Styling */
 .login-form {
     width: 100%;
-    max-width: 350px;
+    max-width: 400px;
     text-align: left;
 }
 
 .login-form label {
     display: block;
     margin-top: 20px;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     font-size: 0.95rem;
     font-weight: 500;
     color: #333333; 
@@ -65,9 +65,9 @@
 .login-form input[type="text"],
 .login-form input[type="password"] {
     width: 100%;
-    padding: 13px 15px;
-    border: 1px solid #e0e0e0; 
-    border-radius: 8px;
+    padding: 8px 15px;
+    border: 1px solid #1A1A1A; 
+    border-radius: 12px;
     box-sizing: border-box;
     font-size: 1rem;
     transition: border-color 0.2s;
@@ -93,14 +93,14 @@
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #a0a0a0;
+    color: #1A1A1A;
     padding: 5px;
     border-radius: 4px;
     transition: color 0.2s;
 }
 
 .toggle-password:hover {
-    color: #333333; 
+    color: #1A1A1A; 
 }
 
 /* Checkbox Ingat Saya */
@@ -120,7 +120,7 @@
     margin-top: 0;
     margin-left: 10px;
     font-weight: 400;
-    color: #555555; 
+    color: #1A1A1A; 
     cursor: pointer;
     font-size: 0.95rem;
 }
@@ -128,7 +128,7 @@
 /* Tombol Masuk */
 .login-button {
     width: 100%;
-    padding: 14px;
+    padding: 10px;
     background-color: #0088FF;
     color: white;
     border: none;
@@ -139,7 +139,7 @@
     transition: background-color 0.3s, transform 0.1s;
     text-transform: none;
     letter-spacing: normal;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .login-button:hover:not(:disabled) {
@@ -157,11 +157,11 @@
 
 /* Secondary Button (Kembali ke Beranda) */
 .login-button.secondary {
-    background-color: #6c757d;
+    background-color: #0088FF;
 }
 
 .login-button.secondary:hover:not(:disabled) {
-    background-color: #5a6268;
+    background-color: #1d4ed8;
 }
 
 /* Error Messages */
@@ -200,8 +200,8 @@
 /* --- Sisi Info Produk (Kanan) --- */
 .product-info-side {
     flex: 1;
-    padding: 40px 20px;
-    background-color: #eaf0f6;
+    padding: 20px;
+    background-image: linear-gradient(to bottom, hsl(150, 95%, 95%), hsl(183, 95%, 95%));
     color: #333333;
     display: flex;
     flex-direction: column;
@@ -290,9 +290,10 @@
     background: white;
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    width: 90%;
+    width: 100%;
+    height: auto;
     max-width: 450px;
-    padding: 25px;
+    padding: 15px 25px 10px;
     position: relative;
 }
 
@@ -300,13 +301,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .modal-header h2 {
     font-size: 1.2rem;
     font-weight: 600;
-    color: #333333; 
+    color: #1A1A1A; 
 }
 
 .modal-close-button {
@@ -314,12 +315,12 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #999;
+    color: #1A1A1A;
 }
 
 .modal-subtitle {
     font-size: 0.9rem;
-    color: #555555; 
+    color: #1A1A1A; 
     margin-bottom: 25px;
 }
 
@@ -328,7 +329,7 @@
     display: block;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #333333; 
+    color: #1A1A1A; 
     margin-bottom: 5px;
     margin-top: 15px;
 }
@@ -337,18 +338,22 @@
 .modal-input {
     width: 100%;
     padding: 10px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #1A1A1A;
     border-radius: 6px;
     box-sizing: border-box;
     font-size: 1rem;
-    
+}
+
+.modal-input:focus {
+    border-color: #0088FF; 
+    outline: none;
 }
 
 /* Styling Khusus untuk Select (Jenis Masalah) */
 .modal-select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #1A1A1A;
     border-radius: 6px;
     box-sizing: border-box;
     font-size: 1rem;
@@ -363,11 +368,17 @@
     background-size: 14px;
 }
 
-/* Button Group (Untuk pemilihan Lupa Password / Masalah Lain) */
+.modal-select:focus {
+    border-color: #0088FF; 
+    outline: none;
+}
+
+/* Button Group (Untuk pemilihan Lupa Password / Masalah Akun Lain) */
 .modal-button-group {
     display: flex;
     gap: 15px;
-    margin-bottom: 30px;
+    margin-top: 15px;
+    margin-bottom: 10px;
 }
 
 .modal-problem-button {
@@ -397,6 +408,7 @@
     font-weight: 600;
     cursor: pointer;
     margin-top: 20px;
+    margin-bottom: 10px;
     transition: background-color 0.2s;
 }
 
@@ -405,13 +417,8 @@
     color: white;
 }
 
-.modal-action-button.primary:hover:not(:disabled) {
+.modal-action-button.primary:hover {
     background-color: #1d4ed8;
-}
-
-.modal-action-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
 }
 
 

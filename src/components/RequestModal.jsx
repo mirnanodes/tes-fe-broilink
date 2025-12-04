@@ -53,7 +53,7 @@ const RequestModal = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
     >
       <div
@@ -104,7 +104,7 @@ const RequestModal = ({ onClose }) => {
                   type="text"
                   value={formData.farmName}
                   onChange={(e) => setFormData({ ...formData, farmName: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>
@@ -114,7 +114,7 @@ const RequestModal = ({ onClose }) => {
                   type="text"
                   value={formData.farmLocation}
                   onChange={(e) => setFormData({ ...formData, farmLocation: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>
@@ -124,7 +124,7 @@ const RequestModal = ({ onClose }) => {
                   type="number"
                   value={formData.farmArea}
                   onChange={(e) => setFormData({ ...formData, farmArea: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>
@@ -137,7 +137,7 @@ const RequestModal = ({ onClose }) => {
                   type="text"
                   value={formData.peternakName}
                   onChange={(e) => setFormData({ ...formData, peternakName: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>
@@ -147,7 +147,7 @@ const RequestModal = ({ onClose }) => {
                   type="tel"
                   value={formData.peternakPhone}
                   onChange={(e) => setFormData({ ...formData, peternakPhone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>
@@ -157,7 +157,7 @@ const RequestModal = ({ onClose }) => {
                   type="email"
                   value={formData.peternakEmail}
                   onChange={(e) => setFormData({ ...formData, peternakEmail: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:outline-none"
                   required
                 />
               </div>

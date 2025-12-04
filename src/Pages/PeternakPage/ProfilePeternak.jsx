@@ -102,129 +102,140 @@ export default function ProfilePeternak() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Profil Peternak</h1>
-
-      <div className="bg-white p-8 rounded-lg shadow border border-gray-200 max-w-2xl">
-        {/* Profile Image Section */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center overflow-hidden">
-            {profileData.profileImage ? (
-              <img
-                src={profileData.profileImage}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-            )}
-          </div>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-          >
-            Ubah Foto Profil
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-        </div>
-
-        {/* Profile Information */}
-        <div className="space-y-6">
-          {/* Name - Read Only */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nama Lengkap
-            </label>
-            <input
-              type="text"
-              value={profileData.name}
-              disabled
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-500 mt-1">Nama tidak dapat diubah</p>
-          </div>
-
-          {/* WhatsApp Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nomor WhatsApp
-            </label>
-            <input
-              type="tel"
-              value={profileData.phone}
-              onChange={(e) => handlePhoneChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Masukkan nomor WhatsApp"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={profileData.email}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Masukkan email"
-            />
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end pt-4">
+    // FIX: Menambahkan wrapper div utama di sini
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      
+      <div className="flex justify-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>
+      </div>
+      
+      <div className="flex justify-center">
+        <div className="bg-white p-8 rounded-lg shadow border border-gray-200 w-full max-w-2xl">
+          {/* Profile Image Section */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-32 h-32 bg-gray-200 rounded-full mb-4 flex items-center justify-center overflow-hidden">
+              {profileData.profileImage ? (
+                <img
+                  src={profileData.profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg className="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
             <button
-              onClick={handleSave}
-              className="px-8 py-3 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
             >
-              Simpan
+              Ubah Foto Profil
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </div>
+
+          {/* Profile Information */}
+          <div className="space-y-6">
+            {/* Name - Read Only */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nama Lengkap
+              </label>
+              <input
+                type="text"
+                value={profileData.name}
+                disabled
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
+
+            {/* WhatsApp Number */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nomor WhatsApp
+              </label>
+              <input
+                type="tel"
+                value={profileData.phone}
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="Masukkan nomor WhatsApp"
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={profileData.email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="Masukkan email"
+              />
+            </div>
+
+            {/* Save Button */}
+            <div className="flex justify-center pt-6">
+              <button
+                onClick={handleSave}
+                className="px-8 py-3 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              >
+                Simpan
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* OTP Modal */}
       {showOtpModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Verifikasi OTP</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Kode OTP telah dikirim ke nomor WhatsApp lama Anda ({originalPhone}). Masukkan kode 6 digit untuk melanjutkan.
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl transform transition-all">
+            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">Verifikasi OTP</h3>
+            <p className="text-sm text-gray-600 mb-6 text-center">
+              Kode OTP telah dikirim ke nomor WhatsApp lama Anda <br/>
+              <span className="font-semibold text-gray-800">{originalPhone}</span>
             </p>
-            <input
-              type="text"
-              maxLength="6"
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest mb-6"
-              placeholder="000000"
-            />
+            
+            <div className="mb-6">
+              <input
+                type="text"
+                maxLength="6"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-center text-3xl tracking-[0.5em] font-mono outline-none"
+                placeholder="000000"
+                autoFocus
+              />
+            </div>
+
             <div className="flex gap-3">
-              <button
-                onClick={handleOtpSubmit}
-                disabled={otpCode.length !== 6}
-                className="flex-1 px-4 py-2 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Verifikasi
-              </button>
               <button
                 onClick={() => {
                   setShowOtpModal(false);
                   setOtpCode('');
                   setPendingChanges(null);
                 }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               >
                 Batal
+              </button>
+              <button
+                onClick={handleOtpSubmit}
+                disabled={otpCode.length !== 6}
+                className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                Verifikasi
               </button>
             </div>
           </div>

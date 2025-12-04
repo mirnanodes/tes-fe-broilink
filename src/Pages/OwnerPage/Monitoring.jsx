@@ -1,8 +1,34 @@
 import React, { useState, useEffect } from 'react';
+import { Line } from 'react-chartjs-2';
+import { Thermometer, Droplet, Wind, Home } from "lucide-react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import ownerService from '../../services/ownerService';
 import { handleError } from '../../utils/errorHandler';
 
+// 1. REGISTER CHART COMPONENTS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const Monitoring = () => {
+  // --- STATE MANAGEMENT ---
   const [filters, setFilters] = useState({
     data1: 'Suhu Aktual',
     data2: 'Tidak Ada',
@@ -17,30 +43,37 @@ const Monitoring = () => {
     status: 'Bahaya'
   });
 
-  const [chartData, setChartData] = useState([
-    { time: '00.00', value: 24 },
-    { time: '04.00', value: 24 },
-    { time: '08.00', value: 24 },
-    { time: '12.00', value: 27 },
-    { time: '16.00', value: 27 },
-    { time: '20.00', value: 35 }
-  ]);
-
-  const [chartData2, setChartData2] = useState([
-    { time: '00.00', value: 65 },
-    { time: '04.00', value: 70 },
-    { time: '08.00', value: 68 },
-    { time: '12.00', value: 60 },
-    { time: '16.00', value: 75 },
-    { time: '20.00', value: 72 }
-  ]);
+  // State untuk menyimpan data grafik (Array of Objects)
+  const [chartData1, setChartData1] = useState([]);
+  const [chartData2, setChartData2] = useState([]);
+  const [labels, setLabels] = useState([]);
 
   const [selectedFarmId, setSelectedFarmId] = useState(1);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
-  const [maxValue, setMaxValue] = useState(40);
+  
+  // Max Value untuk scaling sumbu Y (dihitung dinamis)
+  const [maxValue1, setMaxValue1] = useState(40);
   const [maxValue2, setMaxValue2] = useState(100);
 
+  // --- HELPER: WARNA & UNIT ---
+  const getMetricColor = (metricName) => {
+    switch (metricName) {
+      case 'Suhu Aktual': return '#F97316'; // Orange
+      case 'Kelembapan Aktual': return '#14B8A6'; // Teal
+      case 'Kadar Amonia': return '#8B5CF6'; // Ungu
+    }
+  };
+
+  const getMetricUnit = (metricName) => {
+    switch (metricName) {
+      case 'Suhu Aktual': return '°C';
+      case 'Kelembapan Aktual': return '%';
+      case 'Kadar Amonia': return 'ppm';
+    }
+  };
+
+  // --- API DATA FETCHING ---
   useEffect(() => {
     fetchMonitoringData();
   }, [filters.timeRange, selectedFarmId, filters.data1, filters.data2]);
@@ -48,11 +81,6 @@ const Monitoring = () => {
   const fetchMonitoringData = async () => {
     setIsLoadingData(true);
     setApiError(null);
-
-    console.log('=== MONITORING: Starting data fetch ===');
-    console.log('Farm ID:', selectedFarmId);
-    console.log('Time Range:', filters.timeRange);
-    console.log('Selected Data:', filters.data1);
 
     try {
       const periodMap = {
@@ -64,82 +92,163 @@ const Monitoring = () => {
       const period = periodMap[filters.timeRange] || '1day';
 
       const response = await ownerService.getMonitoring(selectedFarmId, period);
-
       const data = response.data.data || response.data;
 
-      console.log('✅ Monitoring Data:', data);
-
+      // 1. Update Sensor Data Cards
       if (data.current) {
         setSensorData({
-          temperature: data.current.temperature || 35,
-          humidity: data.current.humidity || 75,
-          ammonia: data.current.ammonia || 18,
-          status: data.current.status || 'Bahaya'
+          temperature: data.current.temperature || 0,
+          humidity: data.current.humidity || 0,
+          ammonia: data.current.ammonia || 0,
+          status: data.current.status || 'Normal'
         });
       }
 
+      // 2. Update Chart Data
       if (data.historical && data.historical.length > 0) {
-        // Map data field based on selection
         const dataFieldMap = {
           'Suhu Aktual': 'temperature',
           'Kelembapan Aktual': 'humidity',
           'Kadar Amonia': 'ammonia'
         };
 
-        // Data 1 (Bar chart)
-        const selectedField = dataFieldMap[filters.data1] || 'temperature';
-        const formattedData = data.historical.map(item => ({
-          time: item.timestamp || item.created_at,
-          value: parseFloat(item[selectedField]) || 0
-        }));
+        // Extract Labels (Waktu)
+        const newLabels = data.historical.map(item => {
+            const date = new Date(item.timestamp || item.created_at);
+            return filters.timeRange === '1 Hari Terakhir' 
+                ? date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        });
+        setLabels(newLabels);
 
-        console.log('✅ Setting chart data 1:', formattedData);
-        setChartData(formattedData);
+        // Process Data 1
+        const field1 = dataFieldMap[filters.data1] || 'temperature';
+        const vals1 = data.historical.map(item => parseFloat(item[field1]) || 0);
+        setChartData1(vals1);
+        
+        // Calculate Max 1
+        const max1 = Math.max(...vals1);
+        setMaxValue1(Math.ceil(max1 * 1.2) || 40);
 
-        // Calculate max value dynamically based on data type
-        const maxVal = Math.max(...formattedData.map(d => d.value));
-        let calculatedMax = Math.ceil(maxVal * 1.2); // 20% buffer
-
-        // Set minimum max values based on data type
-        if (selectedField === 'temperature' && calculatedMax < 40) calculatedMax = 40;
-        if (selectedField === 'humidity' && calculatedMax < 100) calculatedMax = 100;
-        if (selectedField === 'ammonia' && calculatedMax < 30) calculatedMax = 30;
-
-        setMaxValue(calculatedMax);
-
-        // Data 2 (Line chart)
+        // Process Data 2
         if (filters.data2 !== 'Tidak Ada') {
-          const selectedField2 = dataFieldMap[filters.data2] || 'temperature';
-          const formattedData2 = data.historical.map(item => ({
-            time: item.timestamp || item.created_at,
-            value: parseFloat(item[selectedField2]) || 0
-          }));
+          const field2 = dataFieldMap[filters.data2] || 'temperature';
+          const vals2 = data.historical.map(item => parseFloat(item[field2]) || 0);
+          setChartData2(vals2);
 
-          console.log('✅ Setting chart data 2:', formattedData2);
-          setChartData2(formattedData2);
-
-          const maxVal2 = Math.max(...formattedData2.map(d => d.value));
-          let calculatedMax2 = Math.ceil(maxVal2 * 1.2);
-
-          if (selectedField2 === 'temperature' && calculatedMax2 < 40) calculatedMax2 = 40;
-          if (selectedField2 === 'humidity' && calculatedMax2 < 100) calculatedMax2 = 100;
-          if (selectedField2 === 'ammonia' && calculatedMax2 < 30) calculatedMax2 = 30;
-
-          setMaxValue2(calculatedMax2);
+          // Calculate Max 2
+          const max2 = Math.max(...vals2);
+          setMaxValue2(Math.ceil(max2 * 1.2) || 40);
+        } else {
+          setChartData2([]);
         }
+      } else {
+        setChartData1([]);
+        setChartData2([]);
+        setLabels([]);
       }
 
       setIsLoadingData(false);
     } catch (error) {
       const errorMessage = handleError('Monitoring fetchData', error);
-      console.error('❌ API ERROR:', errorMessage);
-
       setApiError(errorMessage);
       setIsLoadingData(false);
-
-      // Fallback to mock data - already in state
+      
+      // Fallback Data (Agar UI tidak kosong saat error)
+      setLabels(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']);
+      setChartData1([24, 25, 28, 32, 30, 26]);
+      setChartData2([60, 62, 58, 55, 57, 65]);
     }
   };
+
+  const handleExportExcel = async () => {
+    try {
+        // Implementasi export
+        alert("Fitur export sedang diproses...");
+    } catch (error) {
+        alert("Gagal export");
+    }
+  };
+
+  // --- CHART CONFIGURATION (Disamakan dengan DiagramAnalisis) ---
+  const getChartConfig = () => {
+    const datasets = [];
+
+    // DATA 1: SELALU BATANG (BAR)
+    if (chartData1.length > 0) {
+      const color = getMetricColor(filters.data1);
+      datasets.push({
+        label: filters.data1,
+        data: chartData1,
+        backgroundColor: color,
+        borderColor: color,
+        borderWidth: 1,
+        type: 'bar',
+        yAxisID: 'y',
+        order: 2 // Render di belakang
+      });
+    }
+
+    // DATA 2: SELALU GARIS (LINE)
+    if (filters.data2 !== 'Tidak Ada' && chartData2.length > 0) {
+      const color = getMetricColor(filters.data2);
+      datasets.push({
+        label: filters.data2,
+        data: chartData2,
+        backgroundColor: 'transparent',
+        borderColor: color,
+        borderWidth: 2,
+        type: 'line',
+        yAxisID: 'y1',
+        pointBackgroundColor: 'white',
+        pointBorderColor: color,
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        order: 1 // Render di depan
+      });
+    }
+
+    // Sorting: Line selalu di atas Bar
+    datasets.sort((a, b) => b.order - a.order);
+
+    return {
+      labels: labels,
+      datasets: datasets,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            grid: { display: false }
+          },
+          y: {
+            type: 'linear', display: true, position: 'left',
+            max: maxValue1, // Menggunakan max value dinamis dari data
+            title: { display: true, text: getMetricUnit(filters.data1) },
+            grid: { display: false }
+          },
+          ...(filters.data2 !== 'Tidak Ada' && {
+            y1: {
+              type: 'linear', display: true, position: 'right',
+              max: maxValue2, // Menggunakan max value dinamis dari data
+              title: { display: true, text: getMetricUnit(filters.data2) },
+              grid: { display: false, drawOnChartArea: false }
+            }
+          })
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: { usePointStyle: true, boxWidth: 8 }
+          }
+        }
+      }
+    };
+  };
+
+  const chartConfig = getChartConfig();
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
@@ -159,21 +268,19 @@ const Monitoring = () => {
         </div>
       )}
 
-      {/* Header */}
+      {/* HEADER */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Monitoring Detail Peternakan</h1>
         <p className="text-gray-600 text-sm mt-1">Pantau kondisi vital kandang Anda secara real-time</p>
       </div>
 
-      {/* Metrics Grid */}
+      {/* METRICS GRID (Tetap dipertahankan sesuai permintaan) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Temperature Card */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">
-              <svg width="24" height="24" viewBox="0 0 40 40" fill="currentColor">
-                <path d="M20 5c-2.21 0-4 1.79-4 4v12.17c-1.79 1.06-3 3-3 5.23 0 3.31 2.69 6 6 6s6-2.69 6-6c0-2.23-1.21-4.17-3-5.23V9c0-2.21-1.79-4-4-4zm0 23c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
-              </svg>
+              <Thermometer size={30} />
             </div>
             <div>
               <span className="block text-sm text-gray-600">Suhu Aktual</span>
@@ -186,9 +293,7 @@ const Monitoring = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-              <svg width="24" height="24" viewBox="0 0 40 40" fill="currentColor">
-                <path d="M20 5c-6 7-10 12-10 17 0 5.52 4.48 10 10 10s10-4.48 10-10c0-5-4-10-10-17zm0 24c-3.31 0-6-2.69-6-6 0-2.5 2-5.5 6-10 4 4.5 6 7.5 6 10 0 3.31-2.69 6-6 6z"/>
-              </svg>
+              <Droplet size={30} />
             </div>
             <div>
               <span className="block text-sm text-gray-600">Kelembapan Aktual</span>
@@ -201,13 +306,11 @@ const Monitoring = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-              <svg width="24" height="24" viewBox="0 0 40 40" fill="currentColor">
-                <path d="M8 12h4v16H8V12zm10-4h4v20h-4V8zm10 8h4v12h-4V16z"/>
-              </svg>
+              <Wind size={30} />
             </div>
             <div>
               <span className="block text-sm text-gray-600">Kadar Amonia</span>
-              <span className="block text-2xl font-bold text-gray-900">{sensorData.ammonia} ppm</span>
+              <span className="block text-2xl font-bold text-gray-900">{sensorData.ammonia}ppm</span>
             </div>
           </div>
         </div>
@@ -215,27 +318,30 @@ const Monitoring = () => {
         {/* Status Card */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
-              <svg width="24" height="24" viewBox="0 0 40 40" fill="currentColor">
-                <path d="M20 5L6 13v8c0 8.84 6.12 17.09 14 19 7.88-1.91 14-10.16 14-19v-8L20 5zm-2 24l-6-6 1.41-1.41L18 26.17l8.59-8.58L28 19l-10 10z"/>
-              </svg>
+            <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-black">
+              <Home size={30} />
             </div>
             <div>
               <span className="block text-sm text-gray-600">Status Kandang</span>
-              <span className="inline-block mt-1 px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold rounded-full">
-                {sensorData.status}
-              </span>
+              <span className="inline-block mt-1 px-3 py-1 bg-red-500 text-white text-sm font-semibold rounded-full">{sensorData.status}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Chart Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Grafik Data Sensor Kandang A</h2>
+      {/* --- CHART CARD (MODEL BARU) --- */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        
+        {/* 1. Header Judul Grafik */}
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-gray-900">
+            Grafik Data Sensor {filters.kandang}
+          </h2>
+        </div>
 
-        {/* Chart Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 pb-6 border-b border-gray-200">
+        {/* 2. Kontrol Filter (Layout Baru) */}
+        
+	      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 pb-6 border-gray-200">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Data 1 (Batang):</label>
             <select
@@ -246,7 +352,6 @@ const Monitoring = () => {
               <option>Suhu Aktual</option>
               <option>Kelembapan Aktual</option>
               <option>Kadar Amonia</option>
-              <option>Tidak Ada</option>
             </select>
           </div>
 
@@ -257,10 +362,10 @@ const Monitoring = () => {
               onChange={(e) => setFilters({...filters, data2: e.target.value})}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
+              <option>Tidak Ada</option>
               <option>Suhu Aktual</option>
               <option>Kelembapan Aktual</option>
               <option>Kadar Amonia</option>
-              <option>Tidak Ada</option>
             </select>
           </div>
 
@@ -298,8 +403,8 @@ const Monitoring = () => {
                 <div className="flex items-center gap-2">
                   <span className={`w-4 h-4 rounded ${
                     filters.data1 === 'Suhu Aktual' ? 'bg-orange-500' :
-                    filters.data1 === 'Kelembapan Aktual' ? 'bg-blue-500' :
-                    'bg-green-500'
+                    filters.data1 === 'Kelembapan Aktual' ? 'bg-teal-500' :
+                    'bg-purple-500'
                   }`}></span>
                   <span className="text-sm text-gray-600">
                     {filters.data1 === 'Suhu Aktual' && 'Suhu (°C)'}
@@ -310,7 +415,11 @@ const Monitoring = () => {
               )}
               {filters.data2 !== 'Tidak Ada' && (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-1 bg-purple-500 rounded"></div>
+                  <span className={`w-4 h-4 rounded ${
+                    filters.data2 === 'Suhu Aktual' ? 'bg-orange-500' :
+                    filters.data2 === 'Kelembapan Aktual' ? 'bg-teal-500' :
+                    'bg-purple-500'
+                  }`}></span>
                   <span className="text-sm text-gray-600">
                     {filters.data2 === 'Suhu Aktual' && 'Suhu (°C)'}
                     {filters.data2 === 'Kelembapan Aktual' && 'Kelembapan (%)'}
@@ -322,113 +431,24 @@ const Monitoring = () => {
           </div>
         </div>
 
-        {/* Chart */}
-        <div className="flex gap-4">
-          <div className="flex items-center">
-            <span className="text-sm font-medium text-gray-700 transform -rotate-90 whitespace-nowrap">
-              {filters.data1 === 'Suhu Aktual' && '°C'}
-              {filters.data1 === 'Kelembapan Aktual' && '%'}
-              {filters.data1 === 'Kadar Amonia' && 'ppm'}
-            </span>
-          </div>
-          <div className="flex-1">
-            <div className="flex gap-4 h-96">
-              {/* Y Axis */}
-              <div className="flex flex-col justify-between text-sm text-gray-600 pr-3">
-                <span>{maxValue}</span>
-                <span>{Math.floor(maxValue * 0.75)}</span>
-                <span>{Math.floor(maxValue * 0.5)}</span>
-                <span>{Math.floor(maxValue * 0.25)}</span>
-                <span>0</span>
-              </div>
-              {/* Chart Bars */}
-              <div className="flex-1 flex items-end justify-around gap-3 border-l-2 border-b-2 border-gray-300 px-5 relative">
-                {chartData.map((data, index) => {
-                  const barColorClass = filters.data1 === 'Suhu Aktual' ? 'from-orange-400 to-orange-600' :
-                                         filters.data1 === 'Kelembapan Aktual' ? 'from-blue-400 to-blue-600' :
-                                         'from-green-400 to-green-600';
+        {/* 3. Canvas Grafik */}
+        <div className="h-96 w-full relative">
+          {isLoadingData ? (
+            <div className="flex items-center justify-center h-full text-gray-400">Loading data...</div>
+          ) : (
+            <Line data={chartConfig} options={chartConfig.options} />
+          )}
+        </div>
 
-                  const shadowColor = filters.data1 === 'Suhu Aktual' ? 'shadow-orange-300' :
-                                      filters.data1 === 'Kelembapan Aktual' ? 'shadow-blue-300' :
-                                      'shadow-green-300';
-
-                  const hoverShadow = filters.data1 === 'Suhu Aktual' ? 'group-hover:shadow-orange-400' :
-                                      filters.data1 === 'Kelembapan Aktual' ? 'group-hover:shadow-blue-400' :
-                                      'group-hover:shadow-green-400';
-
-                  return (
-                    <div key={index} className="flex flex-col items-center gap-3 flex-1 h-full justify-end group">
-                      <div
-                        className={`w-full max-w-[70px] bg-gradient-to-b ${barColorClass} rounded-t-md relative cursor-pointer transition-all duration-300 group-hover:opacity-85 group-hover:-translate-y-1 shadow-md ${shadowColor} group-hover:shadow-lg ${hoverShadow}`}
-                        style={{ height: `${(data.value / maxValue) * 100}%`, minHeight: '8px' }}
-                      >
-                        <div className="absolute -top-9 left-1/2 transform -translate-x-1/2 bg-gray-900/85 text-white px-2.5 py-1.5 rounded-md text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-                          {data.value} {filters.data1 === 'Suhu Aktual' ? '°C' : filters.data1 === 'Kelembapan Aktual' ? '%' : 'ppm'}
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-600 font-medium">{data.time}</span>
-                    </div>
-                  );
-                })}
-
-                {/* Line Chart Overlay - only if data2 is not "Tidak Ada" */}
-                {filters.data2 !== 'Tidak Ada' && chartData2.length > 0 && chartData.length > 0 && (
-                  <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
-                    <defs>
-                      <filter id="monitor-shadow">
-                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
-                      </filter>
-                    </defs>
-                    {/* Draw line */}
-                    <polyline
-                      points={chartData2.map((data, index) => {
-                        const totalBars = chartData.length;
-                        const barWidth = 100 / totalBars;
-                        const x = (index * barWidth) + (barWidth / 2);
-                        const y = 100 - ((data.value / maxValue2) * 100);
-                        return `${x}%,${y}%`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#8b5cf6"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
-                      filter="url(#monitor-shadow)"
-                    />
-                    {/* Draw points */}
-                    {chartData2.map((data, index) => {
-                      const totalBars = chartData.length;
-                      const barWidth = 100 / totalBars;
-                      const x = (index * barWidth) + (barWidth / 2);
-                      const y = 100 - ((data.value / maxValue2) * 100);
-                      return (
-                        <circle
-                          key={index}
-                          cx={`${x}%`}
-                          cy={`${y}%`}
-                          r="5"
-                          fill="#8b5cf6"
-                          stroke="white"
-                          strokeWidth="2"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                      );
-                    })}
-                  </svg>
-                )}
-              </div>
-            </div>
-            <div className="text-center text-sm font-medium text-gray-700 mt-2">
-              {filters.timeRange === '1 Hari Terakhir' && 'Jam'}
-              {(filters.timeRange === '1 Minggu Terakhir' || filters.timeRange === '1 Bulan Terakhir') && 'Hari'}
-              {filters.timeRange === '6 Bulan Terakhir' && 'Bulan'}
-            </div>
-          </div>
+        {/* Label Sumbu X */}
+        <div className="flex justify-center text-gray-600 mt-2">
+           <h2 className="text-sm font-medium">
+             {filters.timeRange === '1 Hari Terakhir' ? 'Jam' : 'Tanggal'}
+           </h2>
         </div>
       </div>
     </div>
   );
 };
 
-export default Monitoring;
+export default Monitoring;  

@@ -25,8 +25,9 @@ export default function InputHasilKerja() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-1">
       <h1 className="text-2xl font-bold text-gray-900">Input Hasil Kerja</h1>
+      <p className="text-gray-600 text-sm mt-1 mb-5">Laporkan aktivitas harian Anda</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Grid 2x2 for the 4 cards */}
@@ -109,7 +110,7 @@ export default function InputHasilKerja() {
         </div>
 
         {/* Submit Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-center">
           <button
             type="submit"
             className="px-8 py-3 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"

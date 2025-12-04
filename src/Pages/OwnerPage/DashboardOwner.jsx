@@ -26,16 +26,9 @@ const Dashboard = () => {
 
   const [chartData, setChartData] = useState([
     { time: '00:00', value: 3 },
-    { time: '12:00', value: 5 },
-    { time: '18:00', value: 2 },
-    { time: '06:00', value: 4 },
-  ]);
-
-  const [chartData2, setChartData2] = useState([
-    { time: '00:00', value: 2 },
-    { time: '12:00', value: 4 },
-    { time: '18:00', value: 3 },
     { time: '06:00', value: 5 },
+    { time: '12:00', value: 2 },
+    { time: '18:00', value: 4 },
   ]);
 
   useEffect(() => {
@@ -132,18 +125,6 @@ const Dashboard = () => {
 
         console.log('✅ Setting chart data 1 (bars):', formattedChartData);
         setChartData(formattedChartData);
-
-        // Data 2 (Line chart) - only if not "Tidak Ada"
-        if (selectedFilter2 !== 'Tidak Ada') {
-          const selectedField2 = filterFieldMap[selectedFilter2] || 'jumlah_kematian';
-          const formattedChartData2 = data.manual_data.slice(0, 4).map(item => ({
-            time: new Date(item.report_date || item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            value: Math.round(parseFloat(item[selectedField2]) || 0)
-          }));
-
-          console.log('✅ Setting chart data 2 (line):', formattedChartData2);
-          setChartData2(formattedChartData2);
-        }
       } else {
         console.warn('⚠️ No manual_data in analytics');
       }
@@ -160,13 +141,13 @@ const Dashboard = () => {
     const baseClass = "inline-block px-3 py-1 rounded-full text-xs font-medium";
     switch (status.toLowerCase()) {
       case 'normal':
-        return `${baseClass} bg-green-100 text-green-800`;
+        return `${baseClass} bg-green-500 text-white`;
       case 'info':
-        return `${baseClass} bg-blue-100 text-blue-800`;
+        return `${baseClass} bg-blue-500 text-white`;
       case 'waspada':
-        return `${baseClass} bg-yellow-100 text-yellow-800`;
+        return `${baseClass} bg-yellow-400 text-white`;
       case 'bahaya':
-        return `${baseClass} bg-red-100 text-red-800`;
+        return `${baseClass} bg-red-500 text-white`;
       default:
         return `${baseClass} bg-gray-100 text-gray-800`;
     }
@@ -209,7 +190,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Kondisi Kandang Card */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Kondisi Kandang</h2>
+          <h2 className="text-lg text-center font-semibold text-gray-900 mb-4">Kondisi Kandang</h2>
           <div className="text-center py-4">
             <div className="w-20 h-20 mx-auto mb-4">
               <svg width="80" height="80" viewBox="0 0 80 80">
@@ -219,142 +200,89 @@ const Dashboard = () => {
                 <circle cx="40" cy="50" r="2.5" fill="#FFD700"/>
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{farmData.name}</h3>
-            <p className="text-base font-semibold text-amber-500 mb-1">{farmData.status}</p>
-            <p className="text-2xl font-bold text-red-500">{farmData.temp}</p>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">{farmData.name}</h3>
+            <p className="text-xl font-semibold text-[#64748B] mb-1">{farmData.status}</p>
+            <p className="text-xl font-bold text-[#64748B]">{farmData.temp}</p>
           </div>
         </div>
 
         {/* Analisis Laporan Card */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">Analisis Laporan (Terbaru)</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Data 1 (Batang):</label>
+    <div className="mb-4">
+        <h2 className="text-lg text-center font-semibold text-gray-900 mb-3">Analisis Laporan (Terbaru)</h2>
+        <div className="grid grid-cols-2 gap-3">
+            <div>
                 <select
-                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={selectedFilter}
-                  onChange={(e) => setSelectedFilter(e.target.value)}
+                    className="w-fit px-3 py-1.5 border border-gray-400 rounded-lg text-xs cursor-pointer focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
                 >
-                  <option>Mortalitas</option>
-                  <option>Bobot</option>
-                  <option>Pakan</option>
-                  <option>Minum</option>
+                    <option>Mortalitas</option>
+                    <option>Bobot</option>
+                    <option>Pakan</option>
+                    <option>Minum</option>
                 </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Data 2 (Garis):</label>
-                <select
-                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={selectedFilter2}
-                  onChange={(e) => setSelectedFilter2(e.target.value)}
-                >
-                  <option>Mortalitas</option>
-                  <option>Bobot</option>
-                  <option>Pakan</option>
-                  <option>Minum</option>
-                  <option>Tidak Ada</option>
-                </select>
-              </div>
             </div>
-          </div>
-          <div className="flex gap-4 h-72">
-            {/* Y Axis */}
-            <div className="flex flex-col justify-between text-sm text-gray-600 py-4">
-              <span>6</span>
-              <span>4</span>
-              <span>2</span>
-              <span>0</span>
-            </div>
-            {/* Chart Area */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex-1 flex items-end gap-8 p-4 border-l-2 border-b-2 border-gray-300 relative">
-                {/* Bar Chart */}
-                {chartData.map((data, index) => {
-                  const barColor = selectedFilter === 'Mortalitas' ? 'from-red-500 to-red-400' :
-                                   selectedFilter === 'Bobot' ? 'from-green-500 to-green-400' :
-                                   selectedFilter === 'Pakan' ? 'from-orange-500 to-orange-400' :
-                                   'from-blue-500 to-blue-400';
+        </div>
+    </div>
 
-                  return (
-                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                      <div
-                        className={`w-full bg-gradient-to-t ${barColor} rounded-t min-h-[20px] flex items-start justify-center pt-1`}
-                        style={{ height: `${(data.value / 6) * 100}%` }}
-                      >
-                        <span className="text-xs font-semibold text-white">{data.value}</span>
-                      </div>
-                      <span className="text-xs text-gray-600">{data.time}</span>
-                    </div>
-                  );
-                })}
-
-                {/* Line Chart Overlay - only if data2 is not "Tidak Ada" */}
-                {selectedFilter2 !== 'Tidak Ada' && chartData2.length > 0 && chartData.length > 0 && (
-                  <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
-                    <defs>
-                      <filter id="shadow">
-                        <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3"/>
-                      </filter>
-                    </defs>
-                    {/* Draw line */}
-                    <polyline
-                      points={chartData2.map((data, index) => {
-                        const totalBars = chartData.length;
-                        const barWidth = 100 / totalBars;
-                        const x = (index * barWidth) + (barWidth / 2);
-                        const y = 100 - ((data.value / 6) * 100);
-                        return `${x}%,${y}%`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#8b5cf6"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      vectorEffect="non-scaling-stroke"
-                      filter="url(#shadow)"
-                    />
-                    {/* Draw points */}
-                    {chartData2.map((data, index) => {
-                      const totalBars = chartData.length;
-                      const barWidth = 100 / totalBars;
-                      const x = (index * barWidth) + (barWidth / 2);
-                      const y = 100 - ((data.value / 6) * 100);
-                      return (
-                        <circle
-                          key={index}
-                          cx={`${x}%`}
-                          cy={`${y}%`}
-                          r="5"
-                          fill="#8b5cf6"
-                          stroke="white"
-                          strokeWidth="2"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                      );
-                    })}
-                  </svg>
-                )}
-              </div>
-              <div className="text-center text-sm text-gray-600 font-medium mt-2">Jam</div>
-            </div>
-            {/* Y Label */}
-            <div className="flex items-center">
-              <span className="text-sm text-gray-600 font-medium transform -rotate-90 whitespace-nowrap">
+    <div className="flex gap-1 pb-10 h-60">
+        <div className="flex gap-1 items-center pb-2">
+            <span className="text-base text-gray-800 font-medium transform -rotate-90 whitespace-nowrap">
                 {selectedFilter === 'Mortalitas' ? 'Ekor' :
-                 selectedFilter === 'Bobot' ? 'Gram' :
-                 selectedFilter === 'Pakan' ? 'Kg' :
-                 'Liter'}
-              </span>
+                selectedFilter === 'Bobot' ? 'Gram' :
+                selectedFilter === 'Pakan' ? 'Kg' :
+                'Liter'}
+            </span>
+        </div>
+
+        {/* Y Axis (Angka 0, 2, 4, 6) */}
+        <div className="flex flex-col justify-between text-sm text-gray-600 pt-2 pr-2"> 
+             {/* Tambahkan pr-2 untuk memberi sedikit jarak dari label 'Ekor' */}
+            <span>6</span>
+            <span>4</span>
+            <span>2</span>
+            <span>0</span>
+        </div>
+        
+        {/* Chart Area */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex items-end gap-10 pl-2 border-l-2 border-b-2 border-gray-500 relative">
+              {/* Bar Chart Mapping (Tidak Diubah) */}
+              {chartData.map((data, index) => {
+                const barColor =  selectedFilter === 'Mortalitas' ? 'from-red-500 to-red-400' :
+                                  selectedFilter === 'Bobot' ? 'from-green-500 to-green-400' :
+                                  selectedFilter === 'Pakan' ? 'from-orange-500 to-orange-400' :
+                                  'from-blue-500 to-blue-400';
+
+                    return (
+                        <div key={index} className="flex-1 flex flex-col items-center gap-2">
+                            <div
+                                className={`w-full bg-gradient-to-t ${barColor} rounded-t min-h-[20px] flex items-start justify-center pt-1`}
+                                style={{ height: `${(data.value / 6) * 100}%` }}
+                            >
+                                <span className="text-xs font-semibold text-white">{data.value}</span>
+                            </div>
+                            <span className="absolute top-full mt-1">{data.time}</span>
+                        </div>
+                    );
+                })}
+            </div>
+            
+            {/* X Axis Label ("Jam") */}
+            <div className="w-full h-0.5 relative"> 
+              <div className="text-center text-base text-gray-800 font-medium absolute left-1/2 transform -translate-x-1/2 top-full mt-6">
+                Jam
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
       {/* Aktivitas Peternakan Card */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Aktivitas Peternakan</h2>
+        <h2 className="text-lg text-center font-semibold text-gray-900 mb-4">Aktivitas Peternakan</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead className="bg-gray-50">

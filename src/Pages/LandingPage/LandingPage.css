@@ -34,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 0.5rem;
 }
 
 .logo-icon {
@@ -51,7 +51,7 @@
 }
 
 .nav-desktop {
-  display: none;
+  display: -webkit-box;
   gap: 2rem;
 }
 
@@ -60,17 +60,21 @@
   border: none;
   color: #1A1A1A;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: color 0.3s;
+  font-size: 1rem;
+  transition: color 0.2s;
   text-transform: capitalize;
 }
 
 .nav-desktop .nav-link:hover {
   color: #1d4ed8;
+  font-size: large;
+  transition: 0.1s;
+  font-weight: 500;
 }
 
+
 .btn-login-desktop {
-  display: none;
+  border: none;
   background-color: #0088FF;
   color: white;
   padding: 0.5rem 1.5rem;
@@ -78,6 +82,8 @@
   border-radius: 0.5rem;
   cursor: pointer;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
   transition: background-color 0.3s;
 }
 
@@ -175,14 +181,14 @@
 }
 
 .hero-subtitle {
-  font-size: 1.125rem;
+  font-size: 1.2rem;
   color: #6b7280;
   margin-bottom: 2rem;
 }
 
 .hero-features {
   list-style: none;
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
 }
 
 .hero-feature-item {
@@ -458,7 +464,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
@@ -496,7 +502,6 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: #1A1A1A;
-  margin-bottom: 0.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -504,14 +509,14 @@
 
 .pricing-subtitle {
   color: #6b7280;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .pricing-price-wrapper {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -541,7 +546,7 @@
 }
 
 .pricing-btn:hover {
-  background-color: #e5e7eb;
+  background-color: #15803D;
 }
 
 .pricing-btn.featured {
@@ -560,7 +565,7 @@
 .pricing-feature-item {
   display: flex;
   align-items: flex-start;
-  padding: 0.75rem 0;
+  padding: 0.5rem 0;
 }
 
 .pricing-check {

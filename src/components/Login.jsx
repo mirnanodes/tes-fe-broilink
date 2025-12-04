@@ -85,7 +85,7 @@ const ModalForgotPassword = ({ onClose, onSuccess }) => {
 const ModalOtherProblem = ({ onClose, onSuccess }) => {
     const [whatsapp, setWhatsapp] = useState('');
     const [email, setEmail] = useState('');
-    const [problemType, setProblemType] = useState('Menunggu Detail Login');
+    const [problemType, setProblemType] = useState('Pilih jenis masalah');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -135,7 +135,8 @@ const ModalOtherProblem = ({ onClose, onSuccess }) => {
                 value={problemType}
                 onChange={(e) => setProblemType(e.target.value)}
                 className="modal-select"
-            >
+                placeholder="Pilih jenis masalah"
+            >            
                 <option value="Menunggu Detail Login">Menunggu Detail Login</option>
                 <option value="Masalah Data">Masalah Data</option>
                 <option value="Lainnya">Lainnya</option>

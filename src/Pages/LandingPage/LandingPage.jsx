@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronRight, Check, Star, ChartSpline } from 'lucide-react';
+import { Menu, X, Check, Star, MonitorCheck, ChartNoAxesColumn, Shield, TrendingUp, Clock, UsersRound } from 'lucide-react';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -84,10 +84,6 @@ const LandingPage = () => {
         <section id="beranda" className="hero-section">
           <div className="hero-container">
             <div className="hero-content">
-              {/* <div className="hero-badge">
-                <Check size={16} className="badge-icon" />
-                +35% Efisiensi Peternakan
-              </div> */}
               
               <h1 className="hero-title">
                 Revolusi Peternakan Ayam dengan Teknologi Cerdas
@@ -123,10 +119,6 @@ const LandingPage = () => {
                 className="hero-image" 
             />
               </div>
-              {/* <div className="hero-stat-card">
-                <div className="stat-number">2000+</div>
-                <div className="stat-label">Peternak Bergabung</div>
-              </div> */}
             </div>
           </div>
         </section>
@@ -146,17 +138,17 @@ const LandingPage = () => {
                 {
                   title: 'Monitoring Real-time',
                   description: 'Pantau kandang dan kesehatan ayam secara real-time dengan sensor IoT terintegrasi',
-                  icon: '📈'
+                  icon: <MonitorCheck size={40} color='#16A34A' /> 
                 },
                 {
                   title: 'Analisis Data Cerdas',
                   description: 'Optimalkan hasil dan efisiensi peternakan dengan analisis AI',
-                  icon: '📊'
+                  icon: <ChartNoAxesColumn size={40} color='#4F46E5' />
                 },
                 {
                   title: 'Sistem Keamanan',
                   description: 'Keamanan data enterprise dengan enkripsi end-to-end dan backup otomatis',
-                  icon: '🔒'
+                  icon: <Shield size={40} color='#16A34A' /> 
                 }
               ].map((feature, idx) => (
                 <div key={idx} className="feature-card">
@@ -184,17 +176,17 @@ const LandingPage = () => {
                 {
                   title: 'Peningkatan Produktivitas',
                   description: 'Tingkatkan produktivitas hingga 35% dengan monitoring otomatis',
-                  icon: '🔝'
+                  icon: <TrendingUp size={40} color='#4F46E5' />
                 },
                 {
                   title: 'Efisiensi Waktu',
                   description: 'Hemat hingga 60% waktu operasional dengan otomatisasi dan notifikasi real-time',
-                  icon: '🕓'
+                  icon: <Clock size={50} color='#16A34A' /> 
                 },
                 {
                   title: 'Dukungan 24/7',
                   description: 'Tim ahli siap mendampingi 24/7 demi suksesnya peternakan Anda',
-                  icon: '👥'
+                  icon: <UsersRound size={40} color='#4F46E5' />
                 }
               ].map((item, idx) => (
                 <div key={idx} className="keunggulan-card">
@@ -287,7 +279,7 @@ const LandingPage = () => {
                   features: [
                     'Monitoring unlimited kandang',
                     'Dashboard advance dengan AI',
-                    'Laporan real-time dengan custom',
+                    'Laporan real-time & custom',
                     'Support 24/7 (chat & phone)',
                     'Sensor lengkap + kamera',
                     'Analisis prediktif'
@@ -301,7 +293,7 @@ const LandingPage = () => {
                 >
                   {plan.featured && (
                     <div className="featured-badge">
-                      <Star size={14} fill="currentColor" />
+                      <Star size={15} fill="currentColor" />
                       Paling Populer
                     </div>
                   )}
@@ -338,7 +330,12 @@ const LandingPage = () => {
         <div className="footer-container">
           <div className="footer-grid">
             <div className="footer-brand">
-              <div className="logo">Broilink</div>
+              <div className="logo">
+                <img
+                src="src/assets/image/logo-broilink.png"
+                className="logo-icon"/>
+              </div>
+
               <p className="footer-brand-text">
                 Solusi peternakan ayam broiler terdepan dengan teknologi IoT dan AI untuk hasil optimal.
               </p>
