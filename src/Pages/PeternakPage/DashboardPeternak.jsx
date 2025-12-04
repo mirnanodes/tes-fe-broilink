@@ -233,7 +233,7 @@ export default function DashboardPeternak() {
                   </div>
                   <div>
                     <span className="block text-sm text-gray-600">Kadar Amonia</span>
-                    <span className="block text-2xl font-bold text-gray-900">{sensorData.ammonia} ppm</span>
+                    <span className="block text-2xl font-bold text-gray-900">{sensorData.amonia} ppm</span>
                   </div>
                 </div>
               </div>
@@ -320,7 +320,7 @@ export default function DashboardPeternak() {
                     {selectedData2 === 'pakan' && 'Pakan (Kg)'}
                     {selectedData2 === 'minum' && 'Minum (Liter)'}
                     {selectedData2 === 'bobot' && 'Bobot (Kg)'}
-                    {selectedData2   === 'kematian' && 'Kematian (Ekor)'}
+                    {selectedData2 === 'kematian' && 'Kematian (Ekor)'}
                   </span>
                 </div>
               )}
