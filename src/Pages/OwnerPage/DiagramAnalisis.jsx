@@ -78,39 +78,39 @@ const DiagramAnalisis = () => {
     try {
       const periodMap = {
         '1 Hari Terakhir': '1day',
-        '1 Minggu Terakhir': '7days',
-        '1 Bulan Terakhir': '30days',
-        '6 Bulan Terakhir': '30days'
+        '1 Minggu Terakhir': '1week',
+        '1 Bulan Terakhir': '1month',
+        '6 Bulan Terakhir': '6months'
       };
-      const period = periodMap[filters.timeRange] || '7days';
+      const period = periodMap[filters.timeRange] || '1week';
 
       const response = await ownerService.getAnalytics(selectedFarmId, period);
-      const data = response.data.data || response.data;
 
-      if (data.manual_data && data.manual_data.length > 0) {
-        // Mapping field API
+      // NEW: Handle aggregate API response format
+      // Response structure: { labels: [], feed: [], water: [], avg_weight: [], mortality: [], meta: {} }
+      const aggregateData = response.data;
+
+      if (aggregateData.labels && aggregateData.labels.length > 0) {
+        // Mapping field API - NEW field names from aggregate endpoint
         const dataFieldMap = {
-          'Konsumsi Pakan': 'konsumsi_pakan',
-          'Konsumsi Minum': 'konsumsi_air',
-          'Rata-rata Bobot': 'rata_rata_bobot',
-          'Jumlah Kematian': 'jumlah_kematian'
+          'Konsumsi Pakan': 'feed',
+          'Konsumsi Minum': 'water',
+          'Rata-rata Bobot': 'avg_weight',
+          'Jumlah Kematian': 'mortality'
         };
 
-        // Extract Labels (Waktu)
-        const newLabels = data.manual_data.map(item => 
-          new Date(item.report_date || item.created_at).toLocaleDateString('id-ID', { weekday: 'long' })
-        );
-        setLabels(newLabels);
+        // Set labels directly from aggregate response (already formatted in Indonesian)
+        setLabels(aggregateData.labels);
 
         // Process Data 1
-        const field1 = dataFieldMap[filters.data1] || 'konsumsi_pakan';
-        const data1Values = data.manual_data.map(item => parseFloat(item[field1]) || 0);
+        const field1 = dataFieldMap[filters.data1] || 'feed';
+        const data1Values = (aggregateData[field1] || []).map(v => v !== null ? v : 0);
         setChartData1(data1Values);
 
         // Process Data 2
         if (filters.data2 !== 'Tidak Ada') {
-          const field2 = dataFieldMap[filters.data2] || 'konsumsi_pakan';
-          const data2Values = data.manual_data.map(item => parseFloat(item[field2]) || 0);
+          const field2 = dataFieldMap[filters.data2] || 'feed';
+          const data2Values = (aggregateData[field2] || []).map(v => v !== null ? v : 0);
           setChartData2(data2Values);
         } else {
           setChartData2([]);
@@ -126,7 +126,7 @@ const DiagramAnalisis = () => {
       const errorMessage = handleError('DiagramAnalisis fetchData', error);
       setApiError(errorMessage);
       setIsLoadingData(false);
-      
+
       // Fallback Data Mock saat Error (Agar tampilan tidak rusak)
       setLabels(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']);
       setChartData1([10, 12, 11, 13, 15, 14, 16]);

@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import peternakService from '../../services/peternakService';
 import './ProfileFarm.css';
 
 const ProfileFarm = () => {
   const [profileData, setProfileData] = useState({
-    nama: 'Budi',
-    whatsapp: '+62 812-1234-9876',
-    email: 'budibudi@gmail.com'
+    nama: '',
+    whatsapp: '',
+    email: '',
+    owner_name: '',
+    farm_assigned: ''
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,10 +25,43 @@ const ProfileFarm = () => {
     alert('Fitur upload foto akan diimplementasikan');
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await peternakService.getProfile();
+        const data = response.data?.data || response.data || {};
+
+        setProfileData({
+          nama: data.name || '',
+          whatsapp: data.phone_number || '',
+          email: data.email || '',
+          owner_name: data.owner_name || '-',
+          farm_assigned: data.farm_assigned || '-'
+        });
+      } catch (error) {
+        console.error('Failed to fetch profile', error);
+        alert('Gagal memuat profil');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Profile updated:', profileData);
-    alert('Profil berhasil disimpan!');
+    try {
+      await peternakService.updateProfile({
+        name: profileData.nama,
+        email: profileData.email,
+        phone_number: profileData.whatsapp
+      });
+      alert('Profil berhasil disimpan!');
+    } catch (error) {
+      console.error('Failed to update profile', error);
+      alert('Gagal menyimpan profil');
+    }
   };
 
   return (
@@ -49,13 +86,49 @@ const ProfileFarm = () => {
 
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-group-profil">
+            <label htmlFor="owner">Owner</label>
+            <div className="input-with-icon">
+              <input
+                type="text"
+                id="owner"
+                name="owner"
+                value={isLoading ? 'Memuat...' : profileData.owner_name}
+                disabled
+              />
+              <span className="input-lock-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M15 7h-1V5c0-2.76-2.24-5-5-5S4 2.24 4 5v2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM6 5c0-1.65 1.35-3 3-3s3 1.35 3 3v2H6V5zm4 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div className="form-group-profil">
+            <label htmlFor="farm">Kandang</label>
+            <div className="input-with-icon">
+              <input
+                type="text"
+                id="farm"
+                name="farm"
+                value={isLoading ? 'Memuat...' : profileData.farm_assigned}
+                disabled
+              />
+              <span className="input-lock-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M15 7h-1V5c0-2.76-2.24-5-5-5S4 2.24 4 5v2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM6 5c0-1.65 1.35-3 3-3s3 1.35 3 3v2H6V5zm4 10c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div className="form-group-profil">
             <label htmlFor="nama">Nama Lengkap</label>
             <div className="input-with-icon">
               <input
                 type="text"
                 id="nama"
                 name="nama"
-                value={profileData.nama}
+                value={isLoading ? 'Memuat...' : profileData.nama}
                 onChange={handleChange}
                 disabled
               />

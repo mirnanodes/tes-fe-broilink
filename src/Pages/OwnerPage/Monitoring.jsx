@@ -92,52 +92,57 @@ const Monitoring = () => {
       const period = periodMap[filters.timeRange] || '1day';
 
       const response = await ownerService.getMonitoring(selectedFarmId, period);
-      const data = response.data.data || response.data;
 
-      // 1. Update Sensor Data Cards
-      if (data.current) {
+      // NEW: Handle aggregate API response format
+      // Response structure: { labels: [], temperature: [], humidity: [], ammonia: [], meta: {} }
+      const aggregateData = response.data;
+
+      // 1. Update Sensor Data Cards (use latest value from arrays)
+      if (aggregateData.temperature && aggregateData.temperature.length > 0) {
+        // Get last non-null values for sensor cards
+        const getLastNonNull = (arr) => {
+          for (let i = arr.length - 1; i >= 0; i--) {
+            if (arr[i] !== null && arr[i] !== undefined) return arr[i];
+          }
+          return 0;
+        };
+
         setSensorData({
-          temperature: data.current.temperature || 0,
-          humidity: data.current.humidity || 0,
-          ammonia: data.current.ammonia || 0,
-          status: data.current.status || 'Normal'
+          temperature: Math.round(getLastNonNull(aggregateData.temperature)),
+          humidity: Math.round(getLastNonNull(aggregateData.humidity)),
+          ammonia: getLastNonNull(aggregateData.ammonia),
+          status: 'Normal' // TODO: Calculate status based on thresholds
         });
       }
 
       // 2. Update Chart Data
-      if (data.historical && data.historical.length > 0) {
+      if (aggregateData.labels && aggregateData.labels.length > 0) {
         const dataFieldMap = {
           'Suhu Aktual': 'temperature',
           'Kelembapan Aktual': 'humidity',
           'Kadar Amonia': 'ammonia'
         };
 
-        // Extract Labels (Waktu)
-        const newLabels = data.historical.map(item => {
-            const date = new Date(item.timestamp || item.created_at);
-            return filters.timeRange === '1 Hari Terakhir' 
-                ? date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-                : date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-        });
-        setLabels(newLabels);
+        // Set labels directly from aggregate response
+        setLabels(aggregateData.labels);
 
         // Process Data 1
         const field1 = dataFieldMap[filters.data1] || 'temperature';
-        const vals1 = data.historical.map(item => parseFloat(item[field1]) || 0);
+        const vals1 = (aggregateData[field1] || []).map(v => v !== null ? v : 0);
         setChartData1(vals1);
-        
+
         // Calculate Max 1
-        const max1 = Math.max(...vals1);
+        const max1 = Math.max(...vals1.filter(v => v > 0), 0);
         setMaxValue1(Math.ceil(max1 * 1.2) || 40);
 
         // Process Data 2
         if (filters.data2 !== 'Tidak Ada') {
           const field2 = dataFieldMap[filters.data2] || 'temperature';
-          const vals2 = data.historical.map(item => parseFloat(item[field2]) || 0);
+          const vals2 = (aggregateData[field2] || []).map(v => v !== null ? v : 0);
           setChartData2(vals2);
 
           // Calculate Max 2
-          const max2 = Math.max(...vals2);
+          const max2 = Math.max(...vals2.filter(v => v > 0), 0);
           setMaxValue2(Math.ceil(max2 * 1.2) || 40);
         } else {
           setChartData2([]);
@@ -153,7 +158,7 @@ const Monitoring = () => {
       const errorMessage = handleError('Monitoring fetchData', error);
       setApiError(errorMessage);
       setIsLoadingData(false);
-      
+
       // Fallback Data (Agar UI tidak kosong saat error)
       setLabels(['00:00', '04:00', '08:00', '12:00', '16:00', '20:00']);
       setChartData1([24, 25, 28, 32, 30, 26]);
@@ -323,7 +328,12 @@ const Monitoring = () => {
             </div>
             <div>
               <span className="block text-sm text-gray-600">Status Kandang</span>
-              <span className="inline-block mt-1 px-3 py-1 bg-red-500 text-white text-sm font-semibold rounded-full">{sensorData.status}</span>
+              <span className={`inline-block mt-1 px-3 py-1 text-white text-sm font-semibold rounded-full capitalize ${
+                sensorData.status.toLowerCase() === 'normal' ? 'bg-green-500' :
+                sensorData.status.toLowerCase() === 'waspada' ? 'bg-yellow-400' :
+                sensorData.status.toLowerCase() === 'bahaya' ? 'bg-red-500' :
+                'bg-gray-500'
+              }`}>{sensorData.status}</span>
             </div>
           </div>
         </div>

@@ -205,30 +205,35 @@ const apiService = {
     },
   },
 
-  // TODO: Add methods for Owner endpoints
+  // Owner endpoints
   owner: {
     async getDashboard() {
       return apiService.get('/owner/dashboard');
     },
 
-    async getIotData(farmId) {
-      return apiService.get(`/owner/monitoring/iot-data/${farmId}`);
-    },
-
-    async getManualData(farmId) {
-      return apiService.get(`/owner/monitoring/manual-data/${farmId}`);
-    },
-
-    async getIotHistory(farmId) {
-      return apiService.get(`/owner/analysis/history/iot/${farmId}`);
-    },
-
-    async getManualHistory(farmId) {
-      return apiService.get(`/owner/analysis/history/manual/${farmId}`);
-    },
-
     async submitRequest(requestData) {
       return apiService.post('/owner/requests', requestData);
+    },
+
+    async exportData(farmId, params = {}) {
+      const query = new URLSearchParams(params).toString();
+      return apiService.get(`/owner/export/${farmId}${query ? '?' + query : ''}`);
+    },
+  },
+
+  // Aggregated monitoring endpoints (accessible by all authenticated roles)
+  monitoring: {
+    async aggregate(params) {
+      const query = new URLSearchParams(params).toString();
+      return apiService.get(`/monitoring/aggregate?${query}`);
+    },
+  },
+
+  // Aggregated analysis endpoints (accessible by all authenticated roles)
+  analysis: {
+    async aggregate(params) {
+      const query = new URLSearchParams(params).toString();
+      return apiService.get(`/analysis/aggregate?${query}`);
     },
   },
 

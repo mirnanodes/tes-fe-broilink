@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ownerService from '../../services/ownerService';
 import { handleError } from '../../utils/errorHandler';
 import RequestModal from '../../components/RequestModal';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [selectedFilter, setSelectedFilter] = useState('Mortalitas');
   const [selectedFilter2, setSelectedFilter2] = useState('Tidak Ada');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
 
+  const [farms, setFarms] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState(null);
   const [farmData, setFarmData] = useState({
     name: 'Kandang A',
     status: 'Waspada',
@@ -33,7 +37,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedFilter, selectedFilter2]);
+  }, [selectedFilter, selectedFilter2, selectedFarmId]);
 
   const fetchDashboardData = async () => {
     setIsLoadingData(true);
@@ -54,17 +58,24 @@ const Dashboard = () => {
       const data = response.data.data || response.data;
 
       if (data.farms && data.farms.length > 0) {
-        const firstFarm = data.farms[0];
-        console.log('✅ Setting farm data from API:', firstFarm);
-        setFarmData({
-          name: firstFarm.farm_name || 'Kandang A',
-          status: firstFarm.status || 'normal',
-          temp: firstFarm.temperature ? `${firstFarm.temperature}°C` : '-'
-        });
+        setFarms(data.farms);
 
-        // Fetch analytics data for chart based on selected filter
-        if (firstFarm.farm_id) {
-          await fetchChartData(firstFarm.farm_id);
+        // Use selected farm or first farm
+        const farmToDisplay = selectedFarmId
+          ? data.farms.find(f => f.farm_id === selectedFarmId)
+          : data.farms[0];
+
+        if (!selectedFarmId) {
+          setSelectedFarmId(data.farms[0].farm_id);
+        }
+
+        if (farmToDisplay) {
+          setFarmData({
+            name: farmToDisplay.farm_name || 'Kandang A',
+            status: farmToDisplay.status || 'normal',
+            temp: farmToDisplay.temperature ? `${Math.round(farmToDisplay.temperature)}°C` : '-'
+          });
+          await fetchChartData(farmToDisplay.farm_id);
         }
       } else {
         console.warn('⚠️ No farms data in API response');
@@ -101,32 +112,33 @@ const Dashboard = () => {
 
   const fetchChartData = async (farmId) => {
     try {
-      console.log('Fetching chart data for farm:', farmId, 'Filter1:', selectedFilter, 'Filter2:', selectedFilter2);
+      // Map selectedFilter to API field
+      const filterMapping = {
+        'Mortalitas': 'mortality',
+        'Bobot': 'avg_weight',
+        'Pakan': 'feed',
+        'Minum': 'water'
+      };
+
+      const dataField = filterMapping[selectedFilter] || 'mortality';
+
+      // Call analysis aggregate API (manual data)
       const response = await ownerService.getAnalytics(farmId, '1day');
       const data = response.data.data || response.data;
 
-      console.log('✅ Analytics data:', data);
+      // New API format: { labels: [...], feed: [...], water: [...], avg_weight: [...], mortality: [...] }
+      if (data.labels && data[dataField]) {
+        // Sample 4 evenly spaced data points
+        const totalPoints = data.labels.length;
+        const step = Math.max(1, Math.floor(totalPoints / 4));
+        const indices = [0, step, step * 2, Math.min(step * 3, totalPoints - 1)];
 
-      if (data.manual_data && data.manual_data.length > 0) {
-        // Map filter to data field
-        const filterFieldMap = {
-          'Mortalitas': 'jumlah_kematian',
-          'Bobot': 'rata_rata_bobot',
-          'Pakan': 'konsumsi_pakan',
-          'Minum': 'konsumsi_air'
-        };
-
-        // Data 1 (Bar chart)
-        const selectedField = filterFieldMap[selectedFilter] || 'jumlah_kematian';
-        const formattedChartData = data.manual_data.slice(0, 4).map(item => ({
-          time: new Date(item.report_date || item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-          value: Math.round(parseFloat(item[selectedField]) || 0)
+        const formattedChartData = indices.map(i => ({
+          time: data.labels[i] || '00:00',
+          value: data[dataField][i] || 0
         }));
 
-        console.log('✅ Setting chart data 1 (bars):', formattedChartData);
         setChartData(formattedChartData);
-      } else {
-        console.warn('⚠️ No manual_data in analytics');
       }
     } catch (error) {
       console.error('❌ Failed to fetch chart data:', error);
@@ -194,14 +206,29 @@ const Dashboard = () => {
           <div className="text-center py-4">
             <div className="w-20 h-20 mx-auto mb-4">
               <svg width="80" height="80" viewBox="0 0 80 80">
-                <circle cx="40" cy="40" r="40" fill="#FFD700"/>
+                <circle cx="40" cy="40" r="40" fill={
+                  farmData.status.toLowerCase() === 'normal' ? '#22C55E' :
+                  farmData.status.toLowerCase() === 'waspada' ? '#FFD700' :
+                  farmData.status.toLowerCase() === 'bahaya' ? '#EF4444' :
+                  '#9CA3AF'
+                }/>
                 <path d="M40 18 L60 58 L20 58 Z" fill="#fff"/>
-                <path d="M38 32 L42 32 L41.5 45 L38.5 45 Z" fill="#FFD700"/>
-                <circle cx="40" cy="50" r="2.5" fill="#FFD700"/>
+                <path d="M38 32 L42 32 L41.5 45 L38.5 45 Z" fill={
+                  farmData.status.toLowerCase() === 'normal' ? '#22C55E' :
+                  farmData.status.toLowerCase() === 'waspada' ? '#FFD700' :
+                  farmData.status.toLowerCase() === 'bahaya' ? '#EF4444' :
+                  '#9CA3AF'
+                }/>
+                <circle cx="40" cy="50" r="2.5" fill={
+                  farmData.status.toLowerCase() === 'normal' ? '#22C55E' :
+                  farmData.status.toLowerCase() === 'waspada' ? '#FFD700' :
+                  farmData.status.toLowerCase() === 'bahaya' ? '#EF4444' :
+                  '#9CA3AF'
+                }/>
               </svg>
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">{farmData.name}</h3>
-            <p className="text-xl font-semibold text-[#64748B] mb-1">{farmData.status}</p>
+            <p className="text-xl font-semibold capitalize text-[#64748B] mb-1">{farmData.status}</p>
             <p className="text-xl font-bold text-[#64748B]">{farmData.temp}</p>
           </div>
         </div>
@@ -212,6 +239,15 @@ const Dashboard = () => {
         <h2 className="text-lg text-center font-semibold text-gray-900 mb-3">Analisis Laporan (Terbaru)</h2>
         <div className="grid grid-cols-2 gap-3">
             <div>
+                <select
+                    className="w-full px-3 py-1.5 border border-gray-400 rounded-lg text-xs cursor-pointer focus:ring-blue-500 focus:border-blue-500 focus:outline-none mb-2"
+                    value={selectedFarmId || ''}
+                    onChange={(e) => setSelectedFarmId(Number(e.target.value))}
+                >
+                    {farms.map(farm => (
+                      <option key={farm.farm_id} value={farm.farm_id}>{farm.farm_name}</option>
+                    ))}
+                </select>
                 <select
                     className="w-fit px-3 py-1.5 border border-gray-400 rounded-lg text-xs cursor-pointer focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                     value={selectedFilter}
@@ -294,7 +330,11 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {activities.map((activity, index) => (
-                <tr key={index} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                <tr
+                  key={index}
+                  className={`border-t border-gray-100 transition-colors ${activity.status === 'Info' ? 'hover:bg-blue-50 cursor-pointer' : 'hover:bg-gray-50'}`}
+                  onClick={() => activity.status === 'Info' && navigate('/analytics')}
+                >
                   <td className="px-4 py-4 text-gray-600 text-sm">{activity.time}</td>
                   <td className="px-4 py-4">
                     <div className="flex flex-col gap-1">

@@ -214,9 +214,9 @@ const Login = () => {
     };
 
     const handleContactAdmin = () => {
-        // ADMIN WHATSAPP NUMBER - REPLACE WITH YOUR ACTUAL NUMBER
-        const adminWhatsApp = 'YOUR_ADMIN_WHATSAPP_NUMBER'; // TODO: ISI DENGAN NOMOR WHATSAPP ADMIN ANDA (Format: 6281234567890)
-        window.open(`https://wa.me/${adminWhatsApp}`, '_blank');
+        // ADMIN TELEGRAM - REPLACE WITH YOUR ACTUAL USERNAME
+        const adminTelegram = 'YOUR_ADMIN_TELEGRAM'; // TODO: ISI DENGAN USERNAME TELEGRAM ADMIN ANDA (tanpa @)
+        window.open(`https://t.me/${adminTelegram}`, '_blank');
     };
 
     const openLaporModal = () => {

@@ -25,6 +25,15 @@ const adminService = {
   },
 
   /**
+   * Get single user detail
+   * @param {number} userId - User ID
+   * @returns {Promise} User detail
+   */
+  getUser: (userId) => {
+    return axiosInstance.get(`/admin/users/${userId}`);
+  },
+
+  /**
    * Create new user
    * @param {Object} data - User data {role_id, username, email, password, name, phone_number}
    * @returns {Promise} Created user
@@ -58,6 +67,15 @@ const adminService = {
    */
   getFarms: () => {
     return axiosInstance.get('/admin/farms');
+  },
+
+  /**
+   * Get farms by owner
+   * @param {number} ownerId - Owner user ID
+   * @returns {Promise} Farms list for specific owner
+   */
+  getFarmsByOwner: (ownerId) => {
+    return axiosInstance.get(`/admin/owners/${ownerId}/farms`);
   },
 
   /**

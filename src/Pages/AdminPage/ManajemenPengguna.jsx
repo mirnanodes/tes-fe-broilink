@@ -70,6 +70,8 @@ const ManajemenPengguna = () => {
     { id: 1, user_id: 1, name: 'Ahmad Ridwan', email: 'ahmad@example.com' },
     { id: 3, user_id: 3, name: 'Budi Santoso', email: 'budi@example.com' }
   ]);
+  const [farms, setFarms] = useState([]);
+  const [ownerInfo, setOwnerInfo] = useState(null);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -239,6 +241,11 @@ const ManajemenPengguna = () => {
           editPayload.password = formData.password;
         }
 
+        // Include farm_id if editing peternak
+        if (selectedUser && (selectedUser.role_id === 3 || selectedUser.role === 'Peternak' || selectedUser.role?.name === 'Peternak')) {
+          editPayload.farm_id = formData.farm_id || null;
+        }
+
         const response = await adminService.updateUser(selectedUser.user_id, editPayload);
       }
 
@@ -282,7 +289,7 @@ const ManajemenPengguna = () => {
     setActiveTab('peternak');
   };
 
-  const openModal = (type, user = null) => {
+  const openModal = async (type, user = null) => {
     setModalType(type);
     setSelectedUser(user);
     if (user && type === 'edit') {
@@ -295,13 +302,51 @@ const ManajemenPengguna = () => {
         phone_number: user.phone_number || '',
         status: user.status || 'active',
         farm_id: user.farm_id || '',
-        owner_id: '',
+        owner_id: user.owner_id || '',
         farm_name: '',
         location: '',
         farm_area: '',
       });
+
+      // If editing peternak, fetch owner info and farms
+      if (user.role_id === 3 || user.role === 'Peternak' || user.role?.name === 'Peternak') {
+        try {
+          // Fetch peternak details including owner info
+          const response = await adminService.getUser(user.user_id);
+          const peternakData = response.data?.data || response.data;
+
+          if (peternakData.owner_id) {
+            // Fetch farms for this owner
+            const farmsResponse = await adminService.getFarmsByOwner(peternakData.owner_id);
+            const farmsData = farmsResponse.data?.data || farmsResponse.data || [];
+            setFarms(Array.isArray(farmsData) ? farmsData : []);
+
+            // Set owner info
+            setOwnerInfo({
+              owner_id: peternakData.owner_id,
+              owner_name: peternakData.owner_name || '-'
+            });
+
+            // Update formData with correct values
+            setFormData(prev => ({
+              ...prev,
+              owner_id: peternakData.owner_id,
+              farm_id: peternakData.farm_id || ''
+            }));
+          }
+        } catch (error) {
+          console.error('Failed to fetch peternak details:', error);
+          setFarms([]);
+          setOwnerInfo(null);
+        }
+      } else {
+        setFarms([]);
+        setOwnerInfo(null);
+      }
     } else {
       setActiveTab('peternak');
+      setFarms([]);
+      setOwnerInfo(null);
     }
     setShowModal(true);
   };
@@ -646,6 +691,37 @@ const ManajemenPengguna = () => {
                         )
                       ) : (
                         <>
+                          {/* Show owner info and farm dropdown if editing peternak */}
+                          {selectedUser && (selectedUser.role_id === 3 || selectedUser.role === 'Peternak' || selectedUser.role?.name === 'Peternak') && ownerInfo && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+                                <input
+                                  type="text"
+                                  value={ownerInfo.owner_name}
+                                  disabled
+                                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Owner tidak dapat diubah</p>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Kandang</label>
+                                <select
+                                  value={formData.farm_id}
+                                  onChange={(e) => setFormData({ ...formData, farm_id: e.target.value })}
+                                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                >
+                                  <option value="">Belum ditugaskan</option>
+                                  {farms.map(farm => (
+                                    <option key={farm.farm_id} value={farm.farm_id}>
+                                      {farm.farm_name} - {farm.location}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </>
+                          )}
+
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                             <input
