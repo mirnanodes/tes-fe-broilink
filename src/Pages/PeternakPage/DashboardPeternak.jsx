@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
 import { Thermometer, Droplet, Wind, Home } from "lucide-react";
+import peternakService from '../../services/peternakService';
+import { handleError } from '../../utils/errorHandler';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,10 +14,6 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-
-// HAPUS IMPORT INI KARENA TIDAK ADA FILE-NYA DAN TIDAK DIGUNAKAN
-// import ownerService from '../../services/ownerService';
-// import { handleError } from '../../utils/errorHandler';
 
 ChartJS.register(
   CategoryScale,
@@ -33,25 +31,21 @@ export default function DashboardPeternak() {
   const [selectedData1, setSelectedData1] = useState('pakan');
   const [selectedData2, setSelectedData2] = useState('');
 
-  // Mock data - replace with actual API calls
-  const sensorData = {
-    suhu: 32,
-    kelembapan: 65,
-    amonia: 15,
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+  const [farmName, setFarmName] = useState('');
+
+  const [sensorData, setSensorData] = useState({
+    suhu: 0,
+    kelembapan: 0,
+    amonia: 0,
     statusKandang: 'Normal'
-  };
+  });
 
-  const reportSummary = {
-    totalPakan: 450,
-    totalMinum: 380,
-    rataBobot: 1.8,
-    totalKematian: 12
-  };
-
-  const chartData = {
+  const [chartData, setChartData] = useState({
     pakan: {
       labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-      data: [10, 12, 11, 13, 15, 14, 16],
+      data: [0, 0, 0, 0, 0, 0, 0],
       color: '#F59E0B',
       unit: 'Kg',
       yMax: 20,
@@ -59,7 +53,7 @@ export default function DashboardPeternak() {
     },
     minum: {
       labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-      data: [8, 10, 9, 11, 13, 12, 14],
+      data: [0, 0, 0, 0, 0, 0, 0],
       color: '#06B6D4',
       unit: 'Liter',
       yMax: 20,
@@ -67,7 +61,7 @@ export default function DashboardPeternak() {
     },
     bobot: {
       labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-      data: [1.2, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9],
+      data: [0, 0, 0, 0, 0, 0, 0],
       color: '#10B981',
       unit: 'Kg',
       yMax: 3.0,
@@ -75,11 +69,90 @@ export default function DashboardPeternak() {
     },
     kematian: {
       labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-      data: [1, 2, 1, 3, 2, 2, 1],
+      data: [0, 0, 0, 0, 0, 0, 0],
       color: '#EF4444',
       unit: 'Ekor',
       yMax: 10,
       interval: 2
+    }
+  });
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setApiError(null);
+
+    try {
+      const response = await peternakService.getDashboard();
+      const data = response.data.data || response.data;
+
+      console.log('✅ Peternak Dashboard Data:', data);
+
+      // Update sensor data from current readings
+      if (data.current) {
+        setSensorData({
+          suhu: data.current.temperature || 0,
+          kelembapan: data.current.humidity || 0,
+          amonia: data.current.ammonia || 0,
+          statusKandang: data.current.status || 'Normal'
+        });
+      }
+
+      // Update farm name
+      if (data.farm && data.farm.name) {
+        setFarmName(data.farm.name);
+      }
+
+      // Update chart data from summary
+      if (data.summary) {
+        const labels = data.summary.labels || ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+        setChartData({
+          pakan: {
+            labels: labels,
+            data: data.summary.pakan || [0, 0, 0, 0, 0, 0, 0],
+            color: '#F59E0B',
+            unit: 'Kg',
+            yMax: 20,
+            interval: 5
+          },
+          minum: {
+            labels: labels,
+            data: data.summary.minum || [0, 0, 0, 0, 0, 0, 0],
+            color: '#06B6D4',
+            unit: 'Liter',
+            yMax: 20,
+            interval: 5
+          },
+          bobot: {
+            labels: labels,
+            data: data.summary.bobot || [0, 0, 0, 0, 0, 0, 0],
+            color: '#10B981',
+            unit: 'Kg',
+            yMax: 3.0,
+            interval: 0.5
+          },
+          kematian: {
+            labels: labels,
+            data: data.summary.kematian || [0, 0, 0, 0, 0, 0, 0],
+            color: '#EF4444',
+            unit: 'Ekor',
+            yMax: 10,
+            interval: 2
+          }
+        });
+      }
+
+      setLoading(false);
+    } catch (error) {
+      const errorMessage = handleError('DashboardPeternak fetchData', error);
+      console.error('❌ API ERROR:', errorMessage);
+      setApiError(errorMessage);
+      setLoading(false);
+      // Keep initial state as fallback (already in state)
     }
   };
 
@@ -196,6 +269,22 @@ export default function DashboardPeternak() {
     <div className="space-y-6 p-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard Peternak</h1>
       <p className="text-gray-600 text-sm mt-1">Pusat visual pemantauan status dan tren operasional peternakan</p>
+
+      {/* Error Alert */}
+      {apiError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-800">Gagal Memuat Data dari Backend</h3>
+              <p className="text-sm text-red-700 mt-1">{apiError}</p>
+              <p className="text-xs text-red-600 mt-2">Data ditampilkan dengan nilai default.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 5 Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

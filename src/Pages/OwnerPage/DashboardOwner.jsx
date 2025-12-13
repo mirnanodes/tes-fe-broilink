@@ -70,11 +70,21 @@ const Dashboard = () => {
         }
 
         if (farmToDisplay) {
-          setFarmData({
+          const dashboardData = {
             name: farmToDisplay.farm_name || 'Kandang A',
             status: farmToDisplay.status || 'normal',
             temp: farmToDisplay.temperature ? `${Math.round(farmToDisplay.temperature)}°C` : '-'
+          };
+
+          console.log('🏠 Dashboard Farm Data:', {
+            farmId: farmToDisplay.farm_id,
+            farmName: dashboardData.name,
+            status: dashboardData.status,
+            temperature: farmToDisplay.temperature,
+            rawData: farmToDisplay
           });
+
+          setFarmData(dashboardData);
           await fetchChartData(farmToDisplay.farm_id);
         }
       } else {
@@ -126,22 +136,46 @@ const Dashboard = () => {
       const response = await ownerService.getAnalytics(farmId, '1day');
       const data = response.data.data || response.data;
 
+      console.log('📊 Chart Data from API:', {
+        dataField,
+        totalPoints: data.labels?.length,
+        values: data[dataField],
+        labels: data.labels
+      });
+
       // New API format: { labels: [...], feed: [...], water: [...], avg_weight: [...], mortality: [...] }
       if (data.labels && data[dataField]) {
-        // Sample 4 evenly spaced data points
-        const totalPoints = data.labels.length;
-        const step = Math.max(1, Math.floor(totalPoints / 4));
-        const indices = [0, step, step * 2, Math.min(step * 3, totalPoints - 1)];
-
-        const formattedChartData = indices.map(i => ({
-          time: data.labels[i] || '00:00',
-          value: data[dataField][i] || 0
+        // ✅ FIX: Use ALL data points, not just 4 samples
+        // Convert all points to chart format
+        const allChartData = data.labels.map((label, i) => ({
+          time: label || '00:00',
+          value: parseFloat(data[dataField][i]) || 0
         }));
 
-        setChartData(formattedChartData);
+        // Filter out null/zero values if all data is zero
+        const hasNonZeroData = allChartData.some(d => d.value > 0);
+
+        if (!hasNonZeroData) {
+          console.warn('⚠️ All chart values are 0. Data might be empty.');
+        }
+
+        // ✅ Take last 4 points (most recent data) instead of evenly spaced
+        const recentData = allChartData.slice(-4);
+
+        console.log('📈 Chart Data (last 4 points):', recentData);
+        setChartData(recentData);
+      } else {
+        console.warn('⚠️ No chart data available for field:', dataField);
+        setChartData([
+          { time: '00:00', value: 0 },
+          { time: '06:00', value: 0 },
+          { time: '12:00', value: 0 },
+          { time: '18:00', value: 0 }
+        ]);
       }
     } catch (error) {
       console.error('❌ Failed to fetch chart data:', error);
+      // Keep mock data on error
     }
   };
 

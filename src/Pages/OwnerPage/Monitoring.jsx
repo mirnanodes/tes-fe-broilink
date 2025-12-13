@@ -48,7 +48,8 @@ const Monitoring = () => {
   const [chartData2, setChartData2] = useState([]);
   const [labels, setLabels] = useState([]);
 
-  const [selectedFarmId, setSelectedFarmId] = useState(1);
+  const [farms, setFarms] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
   
@@ -73,10 +74,35 @@ const Monitoring = () => {
     }
   };
 
+  // --- FETCH FARMS ON MOUNT ---
+  useEffect(() => {
+    fetchFarmList();
+  }, []);
+
   // --- API DATA FETCHING ---
   useEffect(() => {
-    fetchMonitoringData();
+    if (selectedFarmId) {
+      fetchMonitoringData();
+    }
   }, [filters.timeRange, selectedFarmId, filters.data1, filters.data2]);
+
+  const fetchFarmList = async () => {
+    try {
+      const response = await ownerService.getDashboard();
+      const farmList = response.data.data.farms || [];
+
+      setFarms(farmList);
+
+      // Auto-select first farm
+      if (farmList.length > 0 && !selectedFarmId) {
+        setSelectedFarmId(farmList[0].farm_id);
+        setFilters(prev => ({ ...prev, kandang: farmList[0].farm_name }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch farms:', error);
+      // Keep using mock data if farms fetch fails
+    }
+  };
 
   const fetchMonitoringData = async () => {
     setIsLoadingData(true);
@@ -97,22 +123,27 @@ const Monitoring = () => {
       // Response structure: { labels: [], temperature: [], humidity: [], ammonia: [], meta: {} }
       const aggregateData = response.data;
 
-      // 1. Update Sensor Data Cards (use latest value from arrays)
-      if (aggregateData.temperature && aggregateData.temperature.length > 0) {
-        // Get last non-null values for sensor cards
-        const getLastNonNull = (arr) => {
-          for (let i = arr.length - 1; i >= 0; i--) {
-            if (arr[i] !== null && arr[i] !== undefined) return arr[i];
-          }
-          return 0;
+      // 1. Update Sensor Data Cards
+      // ✅ FIX: Use overview field (latest single value) instead of aggregated data
+      if (aggregateData.overview) {
+        const sensorUpdate = {
+          temperature: Math.round(aggregateData.overview.temperature || 0),
+          humidity: Math.round(aggregateData.overview.humidity || 0),
+          ammonia: aggregateData.overview.ammonia || 0,
+          status: aggregateData.overview.status || 'normal'
         };
 
-        setSensorData({
-          temperature: Math.round(getLastNonNull(aggregateData.temperature)),
-          humidity: Math.round(getLastNonNull(aggregateData.humidity)),
-          ammonia: getLastNonNull(aggregateData.ammonia),
-          status: 'Normal' // TODO: Calculate status based on thresholds
+        console.log('🌡️ Monitoring Sensor Update (from overview):', {
+          farmId: selectedFarmId,
+          status: sensorUpdate.status,
+          temperature: sensorUpdate.temperature,
+          timestamp: aggregateData.overview.timestamp,
+          source: 'Latest single value (not averaged)'
         });
+
+        setSensorData(sensorUpdate);
+      } else {
+        console.warn('⚠️ No overview data in monitoring response');
       }
 
       // 2. Update Chart Data
@@ -396,13 +427,26 @@ const Monitoring = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Kandang:</label>
             <select
-              value={filters.kandang}
-              onChange={(e) => setFilters({...filters, kandang: e.target.value})}
+              value={selectedFarmId || ''}
+              onChange={(e) => {
+                const farmId = Number(e.target.value);
+                setSelectedFarmId(farmId);
+                const farm = farms.find(f => f.farm_id === farmId);
+                if (farm) {
+                  setFilters({...filters, kandang: farm.farm_name});
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option>Kandang A</option>
-              <option>Kandang B</option>
-              <option>Kandang C</option>
+              {farms.length > 0 ? (
+                farms.map(farm => (
+                  <option key={farm.farm_id} value={farm.farm_id}>
+                    {farm.farm_name}
+                  </option>
+                ))
+              ) : (
+                <option>Memuat kandang...</option>
+              )}
             </select>
           </div>
 

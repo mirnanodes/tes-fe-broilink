@@ -1,12 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import authService from '../services/authService';
+import peternakService from '../services/peternakService';
 import broilinkLogo from '../assets/image/logo-broilink.png';
 
 const NavbarPeternak = () => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: 'Peternak',
+    ownerName: '—',
+    farmName: '—'
+  });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await peternakService.getProfile();
+        const data = response.data?.data || response.data || {};
+
+        setProfileData({
+          name: data.user?.name || 'Peternak',
+          ownerName: data.owner?.owner_name || '—',
+          farmName: data.farm?.farm_name || '—'
+        });
+      } catch (error) {
+        console.error('Failed to fetch profile for navbar:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const user = authService.getUser();
-  const peternakName = user?.name || 'Peternak';
-  const ownerName = localStorage.getItem('ownerName') || '—';
+  const peternakName = profileData.name;
+  const ownerName = profileData.ownerName;
 
   const handleLogout = async () => {
     await authService.logout();
@@ -38,10 +64,11 @@ const NavbarPeternak = () => {
           </button>
 
           {showDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
               <div className="px-4 py-2 border-b border-gray-100">
                 <p className="text-sm font-medium text-gray-900">{peternakName}</p>
                 <p className="text-xs text-gray-500">Owner: {ownerName}</p>
+                <p className="text-xs text-gray-500">Kandang: {profileData.farmName}</p>
               </div>
               <button
                 onClick={handleLogout}

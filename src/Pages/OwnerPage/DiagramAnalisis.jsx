@@ -41,7 +41,8 @@ const DiagramAnalisis = () => {
   const [chartData2, setChartData2] = useState([]);
   const [labels, setLabels] = useState([]);
 
-  const [selectedFarmId, setSelectedFarmId] = useState(1);
+  const [farms, setFarms] = useState([]);
+  const [selectedFarmId, setSelectedFarmId] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [apiError, setApiError] = useState(null);
 
@@ -66,10 +67,35 @@ const DiagramAnalisis = () => {
     }
   };
 
+  // --- FETCH FARMS ON MOUNT ---
+  useEffect(() => {
+    fetchFarmList();
+  }, []);
+
   // --- API DATA FETCHING ---
   useEffect(() => {
-    fetchAnalyticsData();
+    if (selectedFarmId) {
+      fetchAnalyticsData();
+    }
   }, [filters.timeRange, selectedFarmId, filters.data1, filters.data2]);
+
+  const fetchFarmList = async () => {
+    try {
+      const response = await ownerService.getDashboard();
+      const farmList = response.data.data.farms || [];
+
+      setFarms(farmList);
+
+      // Auto-select first farm
+      if (farmList.length > 0 && !selectedFarmId) {
+        setSelectedFarmId(farmList[0].farm_id);
+        setFilters(prev => ({ ...prev, kandang: farmList[0].farm_name }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch farms:', error);
+      // Keep using mock data if farms fetch fails
+    }
+  };
 
   const fetchAnalyticsData = async () => {
     setIsLoadingData(true);
@@ -316,13 +342,26 @@ const DiagramAnalisis = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Kandang:</label>
             <select
-              value={filters.kandang}
-              onChange={(e) => setFilters({...filters, kandang: e.target.value})}
+              value={selectedFarmId || ''}
+              onChange={(e) => {
+                const farmId = Number(e.target.value);
+                setSelectedFarmId(farmId);
+                const farm = farms.find(f => f.farm_id === farmId);
+                if (farm) {
+                  setFilters({...filters, kandang: farm.farm_name});
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option>Kandang A</option>
-              <option>Kandang B</option>
-              <option>Kandang C</option>
+              {farms.length > 0 ? (
+                farms.map(farm => (
+                  <option key={farm.farm_id} value={farm.farm_id}>
+                    {farm.farm_name}
+                  </option>
+                ))
+              ) : (
+                <option>Memuat kandang...</option>
+              )}
             </select>
           </div>
 

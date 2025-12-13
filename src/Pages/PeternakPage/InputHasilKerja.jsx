@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import peternakService from '../../services/peternakService';
 
 export default function InputHasilKerja() {
   const [formData, setFormData] = useState({
@@ -7,16 +8,30 @@ export default function InputHasilKerja() {
     bobot: '',
     kematian: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      // TODO: Replace with actual API call
-      console.log('Submitting:', formData);
+      // Submit to API using peternakService
+      await peternakService.submitReport({
+        report_date: new Date().toISOString().split('T')[0],
+        konsumsi_pakan: parseFloat(formData.pakan),
+        konsumsi_air: parseFloat(formData.minum),
+        rata_rata_bobot: parseFloat(formData.bobot),
+        jumlah_kematian: parseInt(formData.kematian)
+      });
+
       alert('Data berhasil disimpan!');
       setFormData({ pakan: '', minum: '', bobot: '', kematian: '' });
     } catch (error) {
-      alert('Gagal menyimpan data!');
+      console.error('Error submitting report:', error);
+      const errorMessage = error.response?.data?.message || 'Gagal menyimpan data!';
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,9 +128,10 @@ export default function InputHasilKerja() {
         <div className="flex justify-center">
           <button
             type="submit"
-            className="px-8 py-3 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            disabled={isSubmitting}
+            className="px-8 py-3 bg-[#3B82F6] text-white rounded-lg hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Kirim
+            {isSubmitting ? 'Mengirim...' : 'Kirim'}
           </button>
         </div>
       </form>

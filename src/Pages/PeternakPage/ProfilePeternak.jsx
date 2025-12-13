@@ -1,27 +1,66 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import peternakService from '../../services/peternakService';
 
 export default function ProfilePeternak() {
   const [profileData, setProfileData] = useState({
     name: 'Budi',
-    phone: '081234567890',
-    email: 'budi@example.com',
+    phone: '',
+    email: '',
     profileImage: null
   });
 
-  const [originalPhone, setOriginalPhone] = useState('081234567890');
+  const [originalPhone, setOriginalPhone] = useState('');
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [pendingChanges, setPendingChanges] = useState(null);
+  const [loading, setLoading] = useState(true);
   const fileInputRef = useRef(null);
 
-  const handleImageChange = (e) => {
+  // Load profile data from API on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await peternakService.getProfile();
+        const data = response.data?.data || response.data || {};
+
+        const phone = data.user?.phone_number || '';
+        const email = data.user?.email || '';
+        const name = data.user?.name || 'Peternak';
+        const profilePic = data.user?.profile_pic || null;
+
+        setProfileData({
+          name,
+          phone,
+          email,
+          profileImage: profilePic
+        });
+        setOriginalPhone(phone);
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+        alert('Gagal memuat profil');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileData({ ...profileData, profileImage: reader.result });
-      };
-      reader.readAsDataURL(file);
+      try {
+        // Upload to API
+        const response = await peternakService.uploadPhoto(file);
+        const photoUrl = response.data?.data?.profile_pic || null;
+
+        // Update local state with uploaded photo
+        setProfileData({ ...profileData, profileImage: photoUrl });
+        alert('Foto profil berhasil diperbarui!');
+      } catch (error) {
+        console.error('Failed to upload photo:', error);
+        alert('Gagal mengunggah foto!');
+      }
     }
   };
 
@@ -35,11 +74,12 @@ export default function ProfilePeternak() {
 
   const sendOtp = async () => {
     try {
-      // TODO: Replace with actual API call to send OTP
-      console.log('Sending OTP to:', originalPhone);
+      // Call API to send OTP
+      await peternakService.sendOtp(profileData.phone);
       alert(`Kode OTP telah dikirim ke ${originalPhone}`);
       return true;
     } catch (error) {
+      console.error('Failed to send OTP:', error);
       alert('Gagal mengirim OTP!');
       return false;
     }
@@ -47,16 +87,13 @@ export default function ProfilePeternak() {
 
   const verifyOtp = async (code) => {
     try {
-      // TODO: Replace with actual API call to verify OTP
-      console.log('Verifying OTP:', code);
-      // Simulate OTP verification (for demo, accept "123456")
-      if (code === '123456') {
-        return true;
-      }
-      alert('Kode OTP salah!');
-      return false;
+      // Call API to verify OTP
+      await peternakService.verifyOtp(code, profileData.phone);
+      return true;
     } catch (error) {
-      alert('Gagal verifikasi OTP!');
+      console.error('Failed to verify OTP:', error);
+      const errorMsg = error.response?.data?.message || 'Kode OTP salah!';
+      alert(errorMsg);
       return false;
     }
   };
@@ -90,21 +127,34 @@ export default function ProfilePeternak() {
 
   const saveProfile = async (data) => {
     try {
-      // TODO: Replace with actual API call
-      console.log('Saving profile:', data);
+      // Call API to update profile
+      await peternakService.updateProfile({
+        email: data.email,
+        phone_number: data.phone
+      });
       alert('Profil berhasil diperbarui!');
-      localStorage.setItem('userName', data.name);
-      localStorage.setItem('userPhone', data.phone);
-      localStorage.setItem('userEmail', data.email);
     } catch (error) {
-      alert('Gagal menyimpan profil!');
+      console.error('Failed to save profile:', error);
+      const errorMsg = error.response?.data?.message || 'Gagal menyimpan profil!';
+      alert(errorMsg);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-10 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Memuat profil...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     // FIX: Menambahkan wrapper div utama di sini
     <div className="min-h-screen bg-gray-50 py-10 px-4">
-      
+
       <div className="flex justify-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Profil Saya</h1>
       </div>
