@@ -197,7 +197,7 @@ const KonfigurasiKandang = () => {
       <main className="ml-48 pt-24">
         <div className="max-w-7xl mx-auto px-8 py-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Konfigurasi Kandang</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Konfigurasi IoT</h1>
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-gray-700">Pilih Kandang:</label>
               <select
@@ -234,21 +234,6 @@ const KonfigurasiKandang = () => {
                     <InputGroup label="Kritis (ppm)" name="amonia_kritis" value={config.amonia_kritis} onChange={handleInputChange} unit="ppm" />
                   </div>
                 </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Pengaturan Pakan</h2>
-                  <InputGroup label="Min Normal (gram)" name="pakan_min" value={config.pakan_min} onChange={handleInputChange} unit="g" />
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Populasi Awal</h2>
-                  <InputGroup label="Jumlah (ekor)" name="populasi_awal" value={config.populasi_awal} onChange={handleInputChange} unit="ekor" />
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Luas Kandang</h2>
-                  <InputGroup label="Luas (m²)" name="luas_kandang" value={config.luas_kandang} onChange={handleInputChange} unit="m²" />
-                </div>
               </div>
 
               <div className="space-y-6">
@@ -262,58 +247,12 @@ const KonfigurasiKandang = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Pengaturan Bobot</h2>
-                  <div className="grid grid-cols-2 gap-3">
-                    <InputGroup label="Min/Minggu (g)" name="bobot_pertumbuhan_min" value={config.bobot_pertumbuhan_min} onChange={handleInputChange} unit="g" />
-                    <InputGroup label="Target Panen (g)" name="bobot_target" value={config.bobot_target} onChange={handleInputChange} unit="g" />
-                  </div>
-                </div>
+                
 
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Pengaturan Minum</h2>
-                  <InputGroup label="Min Normal (liter)" name="minum_min" value={config.minum_min} onChange={handleInputChange} unit="L" />
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Bobot Rata-rata Awal</h2>
-                  <InputGroup label="Bobot (gram)" name="bobot_awal" value={config.bobot_awal || ''} onChange={handleInputChange} unit="g" />
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Peternak Penanggung Jawab</h2>
-                  {peternaks.length > 0 ? (
-                    <div className="space-y-3">
-                      {peternaks.map((peternak, index) => (
-                        <div key={peternak.user_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                            {peternak.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{peternak.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{peternak.email}</p>
-                          </div>
-                          <div className="flex-shrink-0">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                              Aktif
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      <p className="mt-2 text-sm text-gray-500">Belum ada peternak yang ditugaskan</p>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-center gap-4">
               <button
                 type="button"
                 onClick={() => setShowResetModal(true)}

@@ -15,7 +15,7 @@ const Header = () => {
       <div className="h-full px-6 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <img src={broilinkLogo} alt="Broilink Logo" className="h-10 w-auto" />
+          <img src={broilinkLogo} alt="Broilink Logo" className="h-13 w-auto" />
         </div>
 
         {/* User Profile */}
