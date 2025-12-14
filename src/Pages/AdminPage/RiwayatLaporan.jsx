@@ -147,7 +147,7 @@ const RiwayatLaporan = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <NavbarAdmin /><SidebarAdmin />
-        <main className="ml-48 pt-16 p-8">
+        <main className="ml-48 pt-16 px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
           </div>
@@ -159,21 +159,22 @@ const RiwayatLaporan = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarAdmin /><SidebarAdmin />
-      <main className="ml-48 pt-16 p-8">
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900">Riwayat Laporan & Permintaan</h1>
+      <main className="ml-48 pt-16">
+        <div className="max-w-7xl mx-auto px-8 py-8 space-y-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Riwayat Laporan & Permintaan</h1>
+          <p className="text-gray-600 text-sm mt-1 mb-8">Log semua permintaan yang dikirimkan oleh pengguna sistem</p>
+
+          <div className="flex justify-end items-center gap-2">
+            <span className="text-sm text-gray-600">Urutkan:</span>
+              <select value={filter} onChange={(e) => setFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+                <option>Terbaru</option>
+                <option>Terlama</option>
+              </select>
+          </div>
 
           <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-gray-600">Log semua permintaan yang dikirimkan oleh pengguna sistem</p>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Urutkan:</span>
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-                  <option>Terbaru</option>
-                  <option>Terlama</option>
-                </select>
-              </div>
+            <div className="flex items-center justify-end mb-6">
             </div>
 
             <div className="overflow-x-auto">

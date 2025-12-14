@@ -13,7 +13,7 @@ const SidebarAdmin = () => {
   ];
 
   return (
-    <aside className="w-50 bg-white border-r border-gray-200 h-screen fixed left-0 top-16">
+    <aside className="w-50 bg-white border-r border-gray-200 h-screen fixed left-0 top-10">
       <nav className="py-6">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;

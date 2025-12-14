@@ -356,9 +356,10 @@ const ManajemenPengguna = () => {
     <div className="min-h-screen bg-gray-50">
       <NavbarAdmin />
       <SidebarAdmin />
-      <main className="ml-48 pt-24">
+      <main className="ml-48 pt-16 px-8 py-8">
         <div className="max-w-7xl mx-auto px-8 py-8 space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900">Manajemen Pengguna</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Manajemen Pengguna</h1>
+          <p className="text-gray-600 text-sm mt-1 mb-8">Kontrol penuh untuk memantau, mengelola akses, dan verifikasi akun pengguna</p>
 
           <div className="grid grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Bar } from 'react-chartjs-2';
-import { Thermometer, Droplet, Wind, Home } from "lucide-react";
+import { Thermometer, Droplet, Wind, Home, Bell } from "lucide-react";
 import peternakService from '../../services/peternakService';
 import { handleError } from '../../utils/errorHandler';
 import {
@@ -268,7 +268,7 @@ export default function DashboardPeternak() {
   return (
     <div className="space-y-6 p-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard Peternak</h1>
-      <p className="text-gray-600 text-sm mt-1">Pusat visual pemantauan status dan tren operasional peternakan</p>
+      <p className="text-gray-600 text-sm mt-1 mb-8">Pusat visual pemantauan status dan tren operasional peternakan</p>
 
       {/* Error Alert */}
       {apiError && (
@@ -285,6 +285,20 @@ export default function DashboardPeternak() {
           </div>
         </div>
       )}
+
+      {/* Bottom Aktifkan Notifikasi */}
+      <div className="flex justify-end mt-6">
+        <a 
+          href="https://t.me/Broilink_bot" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+          title="Aktifkan Notifikasi Status Kandang"
+        >
+          <Bell size={20} />
+          <span>Aktifkan Notifikasi</span>
+        </a>
+      </div>
 
       {/* 5 Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

@@ -263,7 +263,7 @@ const DiagramAnalisis = () => {
       {/* Header Halaman */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Analisis Laporan Peternakan</h1>
-        <p className="text-gray-600 text-sm mt-1">Laporan lengkap dan terperinci mengenai aspek finansial dan operasional</p>
+        <p className="text-gray-600 text-sm mt-1 mb-8">Laporan lengkap dan terperinci mengenai aspek finansial dan operasional</p>
       </div>
 
       {/* ERROR ALERT */}

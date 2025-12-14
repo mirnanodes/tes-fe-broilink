@@ -307,7 +307,7 @@ const Monitoring = () => {
       {/* HEADER */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Monitoring Detail Peternakan</h1>
-        <p className="text-gray-600 text-sm mt-1">Pantau kondisi vital kandang Anda secara real-time</p>
+        <p className="text-gray-600 text-sm mt-1 mb-8">Pantau kondisi vital kandang Anda secara real-time</p>
       </div>
 
       {/* METRICS GRID (Tetap dipertahankan sesuai permintaan) */}

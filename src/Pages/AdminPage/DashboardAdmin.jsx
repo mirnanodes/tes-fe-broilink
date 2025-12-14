@@ -118,7 +118,7 @@ const DashboardAdmin = () => {
       <div className="min-h-screen bg-gray-50">
         <NavbarAdmin />
         <SidebarAdmin />
-        <main className="ml-48 pt-24 px-8 py-8">
+        <main className="ml-48 pt-16 px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
           </div>
@@ -131,9 +131,10 @@ const DashboardAdmin = () => {
     <div className="min-h-screen bg-gray-50">
       <NavbarAdmin />
       <SidebarAdmin />
-      <main className="ml-48 pt-24">
+      <main className="ml-48 pt-16">
         <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Dashboard Admin</h1>
+          <p className="text-gray-600 text-sm mt-1 mb-8">Tampilan ringkasan statistik vital dan status operasional sistem secara real-time</p>
           <div className="grid grid-cols-3 gap-8">
             <StatCard title="Total Pengguna Owner" value={stats.total_owners} color="blue" />
             <StatCard title="Total Pengguna Peternak" value={stats.total_peternak} color="blue" />

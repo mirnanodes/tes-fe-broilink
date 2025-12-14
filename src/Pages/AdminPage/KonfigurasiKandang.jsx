@@ -182,7 +182,7 @@ const KonfigurasiKandang = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <NavbarAdmin /><SidebarAdmin />
-        <main className="ml-48 pt-24 px-8 py-8">
+        <main className="ml-48 pt-16 px-8 py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
           </div>
@@ -194,10 +194,11 @@ const KonfigurasiKandang = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavbarAdmin /><SidebarAdmin />
-      <main className="ml-48 pt-24">
+      <main className="ml-48 pt-16">
         <div className="max-w-7xl mx-auto px-8 py-8 space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-gray-900">Konfigurasi IoT</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Konfigurasi IoT</h1>
+          <p className="text-gray-600 text-sm mt-1 mb-8">Pusat pengaturan konektivitas dan kalibrasi perangkat sensor pada setiap kandang</p>
+          <div className="flex items-center justify-end">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-gray-700">Pilih Kandang:</label>
               <select

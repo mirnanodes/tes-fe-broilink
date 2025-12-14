@@ -221,7 +221,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Owner</h1>
-          <p className="text-gray-600 text-sm mt-1">Pantau kondisi semua kandang dan aktivitas peternakan Anda</p>
+          <p className="text-gray-600 text-sm mt-1 mb-8">Pantau kondisi semua kandang dan aktivitas peternakan Anda</p>
         </div>
         <button
           className="flex items-center gap-2 bg-blue-500 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"

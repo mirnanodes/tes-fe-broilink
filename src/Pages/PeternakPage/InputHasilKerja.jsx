@@ -40,9 +40,9 @@ export default function InputHasilKerja() {
   };
 
   return (
-    <div className="space-y-1">
-      <h1 className="text-2xl font-bold text-gray-900">Input Hasil Kerja</h1>
-      <p className="text-gray-600 text-sm mt-1 mb-5">Laporkan aktivitas harian Anda</p>
+    <div className="space-y-6 p-4">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Input Hasil Kerja</h1>
+      <p className="text-gray-600 text-sm mt-1 mb-8">Laporkan aktivitas harian Anda</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Grid 2x2 for the 4 cards */}
